@@ -15,10 +15,11 @@ type EsiClient struct {
 	Timeout time.Duration
 }
 
-func NewEsiClient(baseUrl string, token string) *EsiClient {
+func NewEsiClient(baseUrl string, token string, timeout time.Duration) *EsiClient {
 	return &EsiClient{
 		BaseUrl: baseUrl,
 		Token:   token,
+		Timeout: timeout,
 	}
 }
 
@@ -44,9 +45,11 @@ func (c *EsiClient) get(url string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	if 200 != resp.StatusCode {
 		return nil, fmt.Errorf("%s", body)
 	}
+
 	return body, nil
 }
 

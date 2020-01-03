@@ -61,7 +61,7 @@ func (c *Crypt) Encrypt(text string) (string, error) {
 	ciphertext := make([]byte, aes.BlockSize + len(plaintext))
 	iv := ciphertext[:aes.BlockSize]
 	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
-		panic(err)
+		return "", err
 	}
 	stream := cipher.NewCTR(block, iv)
 	stream.XORKeyStream(ciphertext[aes.BlockSize:], plaintext)
