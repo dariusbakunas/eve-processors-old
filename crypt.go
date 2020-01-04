@@ -19,7 +19,7 @@ type Crypt struct {
 func (c *Crypt) Decrypt(cipherText string) (string, error) {
 	hasher := sha256.New()
 	hasher.Write([]byte(c.key))
-	key := base64.URLEncoding.EncodeToString(hasher.Sum(nil))[:32]
+	key := base64.StdEncoding.EncodeToString(hasher.Sum(nil))[:32]
 	block, err := aes.NewCipher([]byte(key))
 
 	if err != nil {
@@ -49,7 +49,7 @@ func (c *Crypt) Decrypt(cipherText string) (string, error) {
 func (c *Crypt) Encrypt(text string) (string, error) {
 	hasher := sha256.New()
 	hasher.Write([]byte(c.key))
-	key := base64.URLEncoding.EncodeToString(hasher.Sum(nil))[:32]
+	key := base64.StdEncoding.EncodeToString(hasher.Sum(nil))[:32]
 	plaintext := []byte(text)
 
 	block, err := aes.NewCipher([]byte(key))

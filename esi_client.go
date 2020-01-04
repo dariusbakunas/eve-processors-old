@@ -66,7 +66,7 @@ type WalletTransaction struct {
 	TypeId        uint            `json:"type_id"`
 }
 
-func (c *EsiClient) GetWalletTransactions(characterId int) ([]WalletTransaction, error) {
+func (c *EsiClient) GetWalletTransactions(characterId int64) ([]WalletTransaction, error) {
 	url := fmt.Sprintf("%s/characters/%d/wallet/transactions/", c.BaseUrl, characterId)
 	bytes, err := c.get(url)
 	if err != nil {

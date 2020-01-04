@@ -3,13 +3,14 @@ package esi
 import "testing"
 
 func TestCrypt(t *testing.T) {
-	crypt := Crypt{key: "TEST_KEY"}
-
+	crypt := Crypt{key: "owifu092uroiusodifjoisfoisdufiosu"}
 	encrypted, err := crypt.Encrypt("This is plain text")
 
 	if err != nil {
 		t.Errorf("Encrypt error: %q", err)
 	}
+
+	t.Logf("Encrypted: %s", encrypted)
 
 	decrypted, err := crypt.Decrypt(encrypted)
 
