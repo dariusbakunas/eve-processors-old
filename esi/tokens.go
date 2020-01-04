@@ -69,7 +69,7 @@ type TokensResponse struct {
 	ExpiresIn int64 `json:"expires_in"`
 }
 
-func GetAccessToken(db *db.DB, character db.Character, eveClientId string, eveClientSecret string) (string, error) {
+func GetAccessToken(dao *db.DB, character db.Character, eveClientId string, eveClientSecret string) (string, error) {
 	timestamp := utils.GetCurrentTimestamp()
 
 	if timestamp > int64(character.Expires-1000*60) {
@@ -81,10 +81,10 @@ func GetAccessToken(db *db.DB, character db.Character, eveClientId string, eveCl
 			return "", fmt.Errorf("GetTokens: %v", err)
 		}
 
-		err = db.UpdateCharacterTokens(tokens.AccessToken, tokens.RefreshToken, tokens.ExpiresIn, character.ID)
+		err = dao.UpdateCharacterTokens(tokens.AccessToken, tokens.RefreshToken, tokens.ExpiresIn, character.ID)
 
 		if err != nil {
-			return "", fmt.Errorf("db.UpdateCharacterTokens: %v", err)
+			return "", fmt.Errorf("dao.UpdateCharacterTokens: %v", err)
 		}
 
 		return tokens.AccessToken, nil

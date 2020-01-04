@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func ProcessCharacter(db *db.DB, character db.Character, projectID string) error {
+func ProcessCharacter(dao *db.DB, character db.Character, projectID string) error {
 	eveClientId := os.Getenv("EVE_CLIENT_ID")
 
 	if eveClientId == "" {
@@ -23,7 +23,7 @@ func ProcessCharacter(db *db.DB, character db.Character, projectID string) error
 		return fmt.Errorf("EVE_CLIENT_SECRET must be set")
 	}
 
-	accessToken, err := esi.GetAccessToken(db, character, eveClientId, eveClientSecret)
+	accessToken, err := esi.GetAccessToken(dao, character, eveClientId, eveClientSecret)
 
 	if err != nil {
 		return fmt.Errorf("getAccessToken: %v", err);
@@ -34,10 +34,10 @@ func ProcessCharacter(db *db.DB, character db.Character, projectID string) error
 	if strings.Contains(character.Scopes, "esi-wallet.read_character_wallet.v1") {
 		topicID := os.Getenv("PUBSUB_WALLET_TRANSACTIONS_TOPIC_ID")
 
-		encryptedToken, err := db.Encrypt(accessToken)
+		encryptedToken, err := dao.Encrypt(accessToken)
 
 		if err != nil {
-			return fmt.Errorf("db.Encrypt: %v", err)
+			return fmt.Errorf("dao.Encrypt: %v", err)
 		}
 
 		if topicID != "" {
@@ -47,10 +47,10 @@ func ProcessCharacter(db *db.DB, character db.Character, projectID string) error
 				return fmt.Errorf("PublishMessage: %v", err)
 			}
 		} else {
-			err := ProcessWalletTransactions(client, character.ID)
+			err := ProcessWalletTransactions(dao, client, character.ID)
 
 			if err != nil {
-				return fmt.Errorf("processWalletTransactions: %v", err)
+				return fmt.Errorf("ProcessWalletTransactions: %v", err)
 			}
 		}
 	}

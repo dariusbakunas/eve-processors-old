@@ -54,16 +54,16 @@ func (c *Client) get(url string) ([]byte, error) {
 }
 
 type WalletTransaction struct {
-	ClientId      uint            `json:"client_id"`
-	Quantity      uint            `json:"quantity"`
+	ClientId      int64          `json:"client_id"`
+	Quantity      int64          `json:"quantity"`
 	UnitPrice     decimal.Decimal `json:"unit_price"`
 	Date          time.Time       `json:"date"`
 	IsBuy         bool            `json:"is_buy"`
 	IsPersonal    bool            `json:"is_personal"`
-	JournalRefId  uint64          `json:"journal_ref_id"`
-	LocationId    uint64          `json:"location_id"`
-	TransactionId uint64          `json:"transaction_id"`
-	TypeId        uint            `json:"type_id"`
+	JournalRefId  int64          `json:"journal_ref_id"`
+	LocationId    int64          `json:"location_id"`
+	TransactionId int64          `json:"transaction_id"`
+	TypeId        int            `json:"type_id"`
 }
 
 func (c *Client) GetWalletTransactions(characterId int64) ([]WalletTransaction, error) {
