@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func ProcessCharacter(dao *db.DB, character db.Character, projectID string) error {
+func ProcessCharacter(dao *db.DB, character db.Character) error {
 	eveClientId := os.Getenv("EVE_CLIENT_ID")
 
 	if eveClientId == "" {
@@ -32,16 +32,10 @@ func ProcessCharacter(dao *db.DB, character db.Character, projectID string) erro
 	client := esi.NewEsiClient("https://esi.evetech.net/latest", accessToken, time.Second * 3)
 
 	if strings.Contains(character.Scopes, "esi-wallet.read_character_wallet.v1") {
-		topicID := os.Getenv("PUBSUB_WALLET_TRANSACTIONS_TOPIC_ID")
+		projectID := os.Getenv("GOOGLE_CLOUD_PROJECT")
 
-		encryptedToken, err := dao.Encrypt(accessToken)
-
-		if err != nil {
-			return fmt.Errorf("dao.Encrypt: %v", err)
-		}
-
-		if topicID != "" {
-			err := pubsub.PublishMessage(projectID, topicID, character.ID, encryptedToken)
+		if projectID != "" {
+			err = pubsub.PublishMessage(dao, projectID, "PUBSUB_WALLET_TRANSACTIONS_TOPIC_ID", character.ID, accessToken)
 
 			if err != nil {
 				return fmt.Errorf("PublishMessage: %v", err)

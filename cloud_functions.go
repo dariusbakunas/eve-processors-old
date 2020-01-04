@@ -9,7 +9,6 @@ import (
 	"github.com/dariusbakunas/eve-processors/processors"
 	"github.com/dariusbakunas/eve-processors/pubsub"
 	"log"
-	"os"
 	"time"
 )
 
@@ -20,12 +19,6 @@ type PubSubMessage struct {
 }
 
 func ProcessCharacters() {
-	projectID := os.Getenv("GOOGLE_CLOUD_PROJECT")
-
-	if projectID == "" {
-		log.Fatal("GOOGLE_CLOUD_PROJECT must be set")
-	}
-
 	dao, err := db.InitializeDb()
 
 	if err != nil {
@@ -41,9 +34,9 @@ func ProcessCharacters() {
 	}
 
 	for _, character := range characters {
-		err := processors.ProcessCharacter(dao, character, projectID)
+		err := processors.ProcessCharacter(dao, character)
 		if err != nil {
-			log.Fatalf("processCharacter: Failed to process character ID: %d: %v", character.ID, err)
+			log.Fatalf("processors.ProcessCharacter: Failed to process character ID: %d: %v", character.ID, err)
 		}
 	}
 }
@@ -53,33 +46,71 @@ func Esi(ctx context.Context, m PubSubMessage) error {
 	return nil
 }
 
-func ProcessCharacterWalletTransactions(ctx context.Context, m PubSubMessage) error {
+type ProcessInit struct {
+	dao *db.DB
+	esiClient *esi.Client
+	characterID int64
+}
+
+func initialize(m PubSubMessage) (*ProcessInit, error) {
 	message := pubsub.Message{}
 
 	if err := json.Unmarshal(m.Data, &message); err != nil {
-		return fmt.Errorf("json.Unmarshal: %v", err)
+		return nil, fmt.Errorf("json.Unmarshal: %v", err)
 	}
 
 	dao, err := db.InitializeDb()
 
 	if err != nil {
-		log.Fatalf("initializeDb: %v", err)
+		return nil, fmt.Errorf("db.InitializeDb: %v", err)
 	}
-
-	defer dao.Close()
 
 	accessToken, err := dao.Decrypt(message.AccessToken)
 
 	if err != nil {
-		return fmt.Errorf("crypt.Decrypt: %v", err)
+		return nil, fmt.Errorf("crypt.Decrypt: %v", err)
 	}
 
 	client := esi.NewEsiClient("https://esi.evetech.net/latest", accessToken, time.Second * 3)
 
-	err = processors.ProcessWalletTransactions(dao, client, message.CharacterID)
+	return &ProcessInit{
+		dao:         dao,
+		esiClient:   client,
+		characterID: message.CharacterID,
+	}, nil
+}
+
+func ProcessCharacterWalletTransactions(ctx context.Context, m PubSubMessage) error {
+	init, err := initialize(m)
 
 	if err != nil {
-		return fmt.Errorf("processWalletTransactions: %v", err)
+		return fmt.Errorf("initialize: %v", err)
+	}
+
+	defer init.dao.Close()
+
+	err = processors.ProcessWalletTransactions(init.dao, init.esiClient, init.characterID)
+
+	if err != nil {
+		return fmt.Errorf("processors.ProcessWalletTransactions: %v", err)
+	}
+
+	return nil
+}
+
+func ProcessCharacterJournalEntries(ctx context.Context, m PubSubMessage) error {
+	init, err := initialize(m)
+
+	if err != nil {
+		return fmt.Errorf("initialize: %v", err)
+	}
+
+	defer init.dao.Close()
+
+	err = processors.ProcessJournalEntries(init.dao, init.esiClient, init.characterID)
+
+	if err != nil {
+		return fmt.Errorf("processors.ProcessJournalEntries: %v", err)
 	}
 
 	return nil

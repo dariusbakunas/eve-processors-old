@@ -5,7 +5,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/dariusbakunas/eve-processors/db"
 	"log"
+	"os"
 )
 
 type Message struct {
@@ -13,7 +15,19 @@ type Message struct {
 	AccessToken string `json:"accessToken"`
 }
 
-func PublishMessage(projectID string, topicID string, characterID int64, accessToken string) error {
+func PublishMessage(dao *db.DB, projectID string, topicEnvKey string, characterID int64, accessToken string) error {
+	topicID := os.Getenv(topicEnvKey)
+
+	if topicID == "" {
+		return fmt.Errorf("%s must be set", topicEnvKey)
+	}
+
+	encryptedToken, err := dao.Encrypt(accessToken)
+
+	if err != nil {
+		return fmt.Errorf("dao.Encrypt: %v", err)
+	}
+
 	ctx := context.Background()
 	client, err := pubsub.NewClient(ctx, projectID)
 
@@ -25,7 +39,7 @@ func PublishMessage(projectID string, topicID string, characterID int64, accessT
 
 	message := Message{
 		CharacterID: characterID,
-		AccessToken: accessToken,
+		AccessToken: encryptedToken,
 	}
 
 	data, err := json.Marshal(message)
