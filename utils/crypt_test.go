@@ -1,9 +1,11 @@
-package esi
+package utils
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestCrypt(t *testing.T) {
-	crypt := Crypt{key: "owifu092uroiusodifjoisfoisdufiosu"}
+	crypt := Crypt{Key: "owifu092uroiusodifjoisfoisdufiosu"}
 	encrypted, err := crypt.Encrypt("This is plain text")
 
 	if err != nil {

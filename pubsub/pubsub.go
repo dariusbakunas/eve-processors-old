@@ -1,4 +1,4 @@
-package esi
+package pubsub
 
 import (
 	"cloud.google.com/go/pubsub"
@@ -8,7 +8,7 @@ import (
 	"log"
 )
 
-type EsiMessage struct {
+type Message struct {
 	CharacterID int64 `json:"characterID"`
 	AccessToken string `json:"accessToken"`
 }
@@ -23,7 +23,7 @@ func PublishMessage(projectID string, topicID string, characterID int64, accessT
 
 	t := client.Topic(topicID)
 
-	message := EsiMessage{
+	message := Message{
 		CharacterID: characterID,
 		AccessToken: accessToken,
 	}

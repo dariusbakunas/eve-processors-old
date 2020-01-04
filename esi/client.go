@@ -9,21 +9,21 @@ import (
 	"time"
 )
 
-type EsiClient struct {
+type Client struct {
 	BaseUrl string
 	Token string
 	Timeout time.Duration
 }
 
-func NewEsiClient(baseUrl string, token string, timeout time.Duration) *EsiClient {
-	return &EsiClient{
+func NewEsiClient(baseUrl string, token string, timeout time.Duration) *Client {
+	return &Client{
 		BaseUrl: baseUrl,
 		Token:   token,
 		Timeout: timeout,
 	}
 }
 
-func (c *EsiClient) get(url string) ([]byte, error) {
+func (c *Client) get(url string) ([]byte, error) {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
@@ -66,7 +66,7 @@ type WalletTransaction struct {
 	TypeId        uint            `json:"type_id"`
 }
 
-func (c *EsiClient) GetWalletTransactions(characterId int64) ([]WalletTransaction, error) {
+func (c *Client) GetWalletTransactions(characterId int64) ([]WalletTransaction, error) {
 	url := fmt.Sprintf("%s/characters/%d/wallet/transactions/", c.BaseUrl, characterId)
 	bytes, err := c.get(url)
 	if err != nil {

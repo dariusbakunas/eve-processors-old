@@ -12,5 +12,5 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	esi.Process()
+	esi.ProcessCharacters()
 }

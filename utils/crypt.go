@@ -1,4 +1,4 @@
-package esi
+package utils
 
 import (
 	"crypto/aes"
@@ -13,12 +13,12 @@ import (
 )
 
 type Crypt struct {
-	key string
+	Key string
 }
 
 func (c *Crypt) Decrypt(cipherText string) (string, error) {
 	hasher := sha256.New()
-	hasher.Write([]byte(c.key))
+	hasher.Write([]byte(c.Key))
 	key := base64.StdEncoding.EncodeToString(hasher.Sum(nil))[:32]
 	block, err := aes.NewCipher([]byte(key))
 
@@ -48,7 +48,7 @@ func (c *Crypt) Decrypt(cipherText string) (string, error) {
 
 func (c *Crypt) Encrypt(text string) (string, error) {
 	hasher := sha256.New()
-	hasher.Write([]byte(c.key))
+	hasher.Write([]byte(c.Key))
 	key := base64.StdEncoding.EncodeToString(hasher.Sum(nil))[:32]
 	plaintext := []byte(text)
 

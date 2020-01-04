@@ -5,6 +5,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/dariusbakunas/eve-processors/db"
+	"github.com/dariusbakunas/eve-processors/utils"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -67,30 +69,26 @@ type TokensResponse struct {
 	ExpiresIn int64 `json:"expires_in"`
 }
 
-func getCurrentTimestamp() int64 {
-	return time.Now().UnixNano() / int64(time.Millisecond)
-}
+func GetAccessToken(db *db.DB, character db.Character, eveClientId string, eveClientSecret string) (string, error) {
+	timestamp := utils.GetCurrentTimestamp()
 
-func GetAccessToken(db *DB, character Character, eveClientId string, eveClientSecret string) (string, error) {
-	timestamp := getCurrentTimestamp()
+	if timestamp > int64(character.Expires-1000*60) {
+		log.Printf("Updating tokens for Character ID: %d", character.ID)
 
-	if timestamp > int64(character.expires-1000*60) {
-		log.Printf("Updating tokens for Character ID: %d", character.id)
-
-		tokens, err := GetTokens(eveClientId, eveClientSecret, character.refreshToken)
+		tokens, err := GetTokens(eveClientId, eveClientSecret, character.RefreshToken)
 
 		if err != nil {
-			return "", fmt.Errorf("getTokens: %v", err)
+			return "", fmt.Errorf("GetTokens: %v", err)
 		}
 
-		err = db.UpdateCharacterTokens(tokens.AccessToken, tokens.RefreshToken, tokens.ExpiresIn, character.id)
+		err = db.UpdateCharacterTokens(tokens.AccessToken, tokens.RefreshToken, tokens.ExpiresIn, character.ID)
 
 		if err != nil {
-			return "", fmt.Errorf("sq.Update: %v", err)
+			return "", fmt.Errorf("db.UpdateCharacterTokens: %v", err)
 		}
 
 		return tokens.AccessToken, nil
 	} else {
-		return character.accessToken, nil
+		return character.AccessToken, nil
 	}
 }

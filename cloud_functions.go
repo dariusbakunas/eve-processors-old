@@ -4,6 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/dariusbakunas/eve-processors/db"
+	"github.com/dariusbakunas/eve-processors/esi"
+	"github.com/dariusbakunas/eve-processors/processors"
+	"github.com/dariusbakunas/eve-processors/pubsub"
+	"github.com/dariusbakunas/eve-processors/utils"
 	"log"
 	"os"
 	"time"
@@ -15,26 +20,14 @@ type PubSubMessage struct {
 	Data []byte `json:"data"`
 }
 
-func processWalletTransactions(client *EsiClient, characterId int64) error {
-	transactions, err := client.GetWalletTransactions(characterId)
-
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("%+v", transactions)
-
-	return nil
-}
-
-func Process() {
+func ProcessCharacters() {
 	projectID := os.Getenv("GOOGLE_CLOUD_PROJECT")
 
 	if projectID == "" {
 		log.Fatal("GOOGLE_CLOUD_PROJECT must be set")
 	}
 
-	db, err := initializeDb()
+	db, err := db.InitializeDb()
 
 	if err != nil {
 		log.Fatalf("initializeDb: %v", err)
@@ -54,20 +47,20 @@ func Process() {
 	}
 
 	for _, character := range characters {
-		err := ProcessCharacter(db, character, projectID)
+		err := processors.ProcessCharacter(db, character, projectID)
 		if err != nil {
-			log.Fatalf("processCharacter: Failed to process character ID: %d: %v", character.id, err)
+			log.Fatalf("processCharacter: Failed to process character ID: %d: %v", character.ID, err)
 		}
 	}
 }
 
 func Esi(ctx context.Context, m PubSubMessage) error {
-	Process()
+	ProcessCharacters()
 	return nil
 }
 
 func ProcessCharacterWalletTransactions(ctx context.Context, m PubSubMessage) error {
-	message := EsiMessage{}
+	message := pubsub.Message{}
 
 	if err := json.Unmarshal(m.Data, &message); err != nil {
 		return fmt.Errorf("json.Unmarshal: %v", err)
@@ -78,7 +71,7 @@ func ProcessCharacterWalletTransactions(ctx context.Context, m PubSubMessage) er
 		return fmt.Errorf("TOKEN_SECRET must be set")
 	}
 
-	crypt := Crypt{key:tokenSecret}
+	crypt := utils.Crypt{Key: tokenSecret}
 
 	accessToken, err := crypt.Decrypt(message.AccessToken)
 
@@ -86,9 +79,9 @@ func ProcessCharacterWalletTransactions(ctx context.Context, m PubSubMessage) er
 		return fmt.Errorf("crypt.Decrypt: %v", err)
 	}
 
-	client := NewEsiClient("https://esi.evetech.net/latest", accessToken, time.Second * 3)
+	client := esi.NewEsiClient("https://esi.evetech.net/latest", accessToken, time.Second * 3)
 
-	err = processWalletTransactions(client, message.CharacterID)
+	err = processors.ProcessWalletTransactions(client, message.CharacterID)
 
 	if err != nil {
 		return fmt.Errorf("processWalletTransactions: %v", err)

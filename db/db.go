@@ -1,8 +1,9 @@
-package esi
+package db
 
 import (
 	"database/sql"
 	"fmt"
+	"github.com/dariusbakunas/eve-processors/utils"
 	"os"
 )
 
@@ -10,11 +11,11 @@ import sq "github.com/Masterminds/squirrel"
 
 type DB struct {
 	db *sql.DB
-	crypt *Crypt
+	crypt *utils.Crypt
 }
 
-func (db *DB) Close() error {
-	return db.db.Close()
+func (d *DB) Close() error {
+	return d.db.Close()
 }
 
 func NewDB(connection string, database string, username string, password string, tokenSecret string) (*DB, error) {
@@ -25,7 +26,7 @@ func NewDB(connection string, database string, username string, password string,
 		return nil, fmt.Errorf("sql.Open: %v", err)
 	}
 
-	crypt := &Crypt{key:tokenSecret}
+	crypt := &utils.Crypt{Key: tokenSecret}
 
 	return &DB {
 		db: db,
@@ -33,7 +34,7 @@ func NewDB(connection string, database string, username string, password string,
 	}, nil
 }
 
-func initializeDb() (*DB, error) {
+func InitializeDb() (*DB, error) {
 	tokenSecret := os.Getenv("TOKEN_SECRET")
 	if tokenSecret == "" {
 		return nil, fmt.Errorf("TOKEN_SECRET must be set")
@@ -74,11 +75,19 @@ func initializeDb() (*DB, error) {
 
 
 type Character struct {
-	id           int64
-	accessToken  string
-	refreshToken string
-	expires      int
-	scopes       string
+	ID           int64
+	AccessToken  string
+	RefreshToken string
+	Expires      int
+	Scopes       string
+}
+
+func (d *DB) Encrypt(plainText string) (string, error) {
+	return d.crypt.Encrypt(plainText)
+}
+
+func (d *DB) Decrypt(cipherText string) (string, error) {
+	return d.crypt.Decrypt(cipherText);
 }
 
 func (d *DB) GetCharacters() ([]Character, error) {
@@ -95,19 +104,19 @@ func (d *DB) GetCharacters() ([]Character, error) {
 	for rows.Next() {
 		var character Character
 
-		err := rows.Scan(&character.id, &character.accessToken, &character.refreshToken, &character.expires, &character.scopes)
+		err := rows.Scan(&character.ID, &character.AccessToken, &character.RefreshToken, &character.Expires, &character.Scopes)
 
 		if err != nil {
 			return nil, fmt.Errorf("rows.Scan: %v", err)
 		}
 
-		character.accessToken, err = d.crypt.Decrypt(character.accessToken)
+		character.AccessToken, err = d.crypt.Decrypt(character.AccessToken)
 
 		if err != nil {
 			return nil, fmt.Errorf("db.crypt.Decrypt: %v", err)
 		}
 
-		character.refreshToken, err = d.crypt.Decrypt(character.refreshToken)
+		character.RefreshToken, err = d.crypt.Decrypt(character.RefreshToken)
 
 		if err != nil {
 			return nil, fmt.Errorf("db.crypt.Decrypt: %v", err)
@@ -120,7 +129,7 @@ func (d *DB) GetCharacters() ([]Character, error) {
 }
 
 func (d *DB) UpdateCharacterTokens(accessToken string, refreshToken string, expiresIn int64, characterId int64) error {
-	timestamp := getCurrentTimestamp()
+	timestamp := utils.GetCurrentTimestamp()
 
 	encryptedAccessToken, err := d.crypt.Encrypt(accessToken)
 
