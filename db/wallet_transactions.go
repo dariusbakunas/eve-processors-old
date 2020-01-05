@@ -2,28 +2,13 @@ package db
 
 import (
 	"fmt"
-	"github.com/shopspring/decimal"
+	"github.com/dariusbakunas/eve-processors/esi"
 	"log"
-	"time"
 )
 
 import sq "github.com/Masterminds/squirrel"
 
-type WalletTransaction struct {
-	ID int64
-	CharacterID int64
-	ClientID int64
-	IsBuy bool
-	IsPersonal bool
-	Quantity int64
-	TypeID int
-	LocationID int64
-	JournalRefID int64
-	UnitPrice decimal.Decimal
-	Date time.Time
-}
-
-func (d *DB) InsertWalletTransactions(characterID int64, transactions []WalletTransaction) error {
+func (d *DB) InsertWalletTransactions(characterID int64, transactions []esi.WalletTransaction) error {
 	if len(transactions) == 0 {
 		log.Printf("No new transactions for character ID: %d", characterID)
 		return nil
@@ -35,17 +20,17 @@ func (d *DB) InsertWalletTransactions(characterID int64, transactions []WalletTr
 
 	for _, v := range transactions {
 		builder = builder.Values(
-			v.ID,
-			v.ClientID,
+			v.TransactionId,
+			v.ClientId,
 			v.IsBuy,
 			v.IsPersonal,
 			v.Quantity,
-			v.TypeID,
-			v.LocationID,
-			v.JournalRefID,
+			v.TypeId,
+			v.LocationId,
+			v.JournalRefId,
 			v.UnitPrice,
 			v.Date,
-			v.CharacterID)
+			characterID)
 	}
 
 	result, err := builder.RunWith(d.db).Exec()
