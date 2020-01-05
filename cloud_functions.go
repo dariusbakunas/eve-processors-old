@@ -12,8 +12,11 @@ import (
 	"time"
 )
 
-import ps "cloud.google.com/go/pubsub"
 import _ "github.com/go-sql-driver/mysql"
+
+type PubSubMessage struct {
+	Data []byte `json:"data"`
+}
 
 func ProcessCharacters() {
 	dao, err := db.InitializeDb()
@@ -38,7 +41,7 @@ func ProcessCharacters() {
 	}
 }
 
-func Esi(ctx context.Context, m *ps.Message) error {
+func Esi(ctx context.Context, m PubSubMessage) error {
 	ProcessCharacters()
 	return nil
 }
@@ -49,7 +52,7 @@ type ProcessInit struct {
 	characterID int64
 }
 
-func initialize(m *ps.Message) (*ProcessInit, error) {
+func initialize(m PubSubMessage) (*ProcessInit, error) {
 	message := pubsub.Message{}
 
 	if err := json.Unmarshal(m.Data, &message); err != nil {
@@ -77,7 +80,7 @@ func initialize(m *ps.Message) (*ProcessInit, error) {
 	}, nil
 }
 
-func ProcessCharacterWalletTransactions(ctx context.Context, m *ps.Message) error {
+func ProcessCharacterWalletTransactions(ctx context.Context, m PubSubMessage) error {
 	init, err := initialize(m)
 
 	if err != nil {
@@ -92,12 +95,10 @@ func ProcessCharacterWalletTransactions(ctx context.Context, m *ps.Message) erro
 		return fmt.Errorf("processors.ProcessWalletTransactions: %v", err)
 	}
 
-	m.Ack()
-
 	return nil
 }
 
-func ProcessCharacterJournalEntries(ctx context.Context, m *ps.Message) error {
+func ProcessCharacterJournalEntries(ctx context.Context, m PubSubMessage) error {
 	init, err := initialize(m)
 
 	if err != nil {
@@ -111,8 +112,6 @@ func ProcessCharacterJournalEntries(ctx context.Context, m *ps.Message) error {
 	if err != nil {
 		return fmt.Errorf("processors.ProcessJournalEntries: %v", err)
 	}
-
-	m.Ack()
 
 	return nil
 }
