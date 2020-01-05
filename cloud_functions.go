@@ -40,6 +40,7 @@ func ProcessCharacters() {
 
 func Esi(ctx context.Context, m *ps.Message) error {
 	ProcessCharacters()
+	m.Ack()
 	return nil
 }
 
