@@ -2,13 +2,13 @@ package db
 
 import (
 	"fmt"
-	"github.com/dariusbakunas/eve-processors/esi"
+	"github.com/dariusbakunas/eve-processors/models"
 	"log"
 )
 
 import sq "github.com/Masterminds/squirrel"
 
-func (d *DB) InsertWalletTransactions(characterID int64, transactions []esi.WalletTransaction) error {
+func (d *DB) InsertWalletTransactions(characterID int64, transactions []models.WalletTransaction) error {
 	if len(transactions) == 0 {
 		log.Printf("No new transactions for character ID: %d", characterID)
 		return nil

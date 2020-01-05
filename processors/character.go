@@ -30,21 +30,32 @@ func ProcessCharacter(dao *db.DB, character db.Character) error {
 	}
 
 	client := esi.NewEsiClient("https://esi.evetech.net/latest", accessToken, time.Second * 3)
+	projectID := os.Getenv("GOOGLE_CLOUD_PROJECT")
 
 	if strings.Contains(character.Scopes, "esi-wallet.read_character_wallet.v1") {
-		projectID := os.Getenv("GOOGLE_CLOUD_PROJECT")
-
 		if projectID != "" {
 			err = pubsub.PublishMessage(dao, projectID, "PUBSUB_WALLET_TRANSACTIONS_TOPIC_ID", character.ID, accessToken)
 
 			if err != nil {
-				return fmt.Errorf("PublishMessage: %v", err)
+				return fmt.Errorf("PublishMessage PUBSUB_WALLET_TRANSACTIONS_TOPIC_ID: %v", err)
+			}
+
+			err = pubsub.PublishMessage(dao, projectID, "PUBSUB_JOURNAL_ENTRIES_TOPIC_ID", character.ID, accessToken)
+
+			if err != nil {
+				return fmt.Errorf("PublishMessage PUBSUB_JOURNAL_ENTRIES_TOPIC_ID: %v", err)
 			}
 		} else {
 			err := ProcessWalletTransactions(dao, client, character.ID)
 
 			if err != nil {
 				return fmt.Errorf("ProcessWalletTransactions: %v", err)
+			}
+
+			err = ProcessJournalEntries(dao, client, character.ID)
+
+			if err != nil {
+				return fmt.Errorf("ProcessJournalEntries: %v", err)
 			}
 		}
 	}
