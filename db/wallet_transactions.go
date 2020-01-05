@@ -3,6 +3,7 @@ package db
 import (
 	"fmt"
 	"github.com/dariusbakunas/eve-processors/models"
+	"gopkg.in/guregu/null.v3"
 	"log"
 )
 
@@ -10,6 +11,19 @@ import sq "github.com/Masterminds/squirrel"
 
 func (d *DB) InsertWalletTransactions(characterID int64, transactions []models.WalletTransaction) error {
 	if len(transactions) == 0 {
+		err := d.InsertLogEntry(characterID, models.JobLogEntry{
+			Category:      "WALLET_TRANSACTIONS",
+			Status:        "SUCCESS",
+			Message:       "No new transactions",
+			Error:         null.String{},
+			CharacterID:   null.NewInt(characterID, true),
+			CorporationID: null.Int{},
+		})
+
+		if err != nil {
+			return fmt.Errorf("d.InsertLogEntry: %v", err)
+		}
+
 		log.Printf("No new transactions for character ID: %d", characterID)
 		return nil
 	}
@@ -36,6 +50,19 @@ func (d *DB) InsertWalletTransactions(characterID int64, transactions []models.W
 	result, err := builder.RunWith(d.db).Exec()
 
 	if err != nil {
+		err := d.InsertLogEntry(characterID, models.JobLogEntry{
+			Category:      "WALLET_TRANSACTIONS",
+			Status:        "FAILURE",
+			Message:       "Failed to get wallet transactions",
+			Error:         null.NewString(err.Error(), true),
+			CharacterID:   null.NewInt(characterID, true),
+			CorporationID: null.Int{},
+		})
+
+		if err != nil {
+			return fmt.Errorf("d.InsertLogEntry: %v", err)
+		}
+
 		return fmt.Errorf("builder.Exec: %v", err)
 	}
 
@@ -46,8 +73,34 @@ func (d *DB) InsertWalletTransactions(characterID int64, transactions []models.W
 	}
 
 	if count > 0 {
+		err := d.InsertLogEntry(characterID, models.JobLogEntry{
+			Category:      "WALLET_TRANSACTIONS",
+			Status:        "SUCCESS",
+			Message:       fmt.Sprintf("Inserted %d new transactions", count),
+			Error:         null.String{},
+			CharacterID:   null.NewInt(characterID, true),
+			CorporationID: null.Int{},
+		})
+
+		if err != nil {
+			return fmt.Errorf("d.InsertLogEntry: %v", err)
+		}
+
 		log.Printf("Inserted %d new transactions for character ID: %d", count, characterID)
 	} else {
+		err := d.InsertLogEntry(characterID, models.JobLogEntry{
+			Category:      "WALLET_TRANSACTIONS",
+			Status:        "SUCCESS",
+			Message:       "No new transactions",
+			Error:         null.String{},
+			CharacterID:   null.NewInt(characterID, true),
+			CorporationID: null.Int{},
+		})
+
+		if err != nil {
+			return fmt.Errorf("d.InsertLogEntry: %v", err)
+		}
+
 		log.Printf("No new transactions for character ID: %d", characterID)
 	}
 

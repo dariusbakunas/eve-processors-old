@@ -23,7 +23,7 @@ type JournalEntry struct {
 	Amount        decimal.NullDecimal `json:"amount"`
 	Balance       decimal.NullDecimal `json:"balance"`
 	ContextID     null.Int            `json:"context_id"`
-	ContextIDType null.String		`json:"context_id_type"`
+	ContextIDType null.String         `json:"context_id_type"`
 	Date          time.Time           `json:"date"`
 	Description   string              `json:"description"`
 	FirstPartyID  null.Int            `json:"first_party_id"`
@@ -33,4 +33,15 @@ type JournalEntry struct {
 	SecondPartyID null.Int            `json:"second_party_id"`
 	Tax           decimal.NullDecimal `json:"tax"`
 	TaxReceiverID null.Int            `json:"tax_receiver_id"`
+}
+
+type JobLogEntry struct {
+	ID            null.Int
+	CreatedAt     null.Time
+	Category      string
+	Status        string
+	Message       string
+	Error         null.String
+	CharacterID   null.Int
+	CorporationID null.Int
 }
