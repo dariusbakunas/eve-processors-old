@@ -3,13 +3,13 @@ package db
 import (
 	"fmt"
 	"github.com/Masterminds/squirrel"
-	"github.com/dariusbakunas/eve-processors/models"
+	"gopkg.in/guregu/null.v3"
 )
 
-func (d *DB) InsertLogEntry(characterID int64, entry models.JobLogEntry) error {
+func (d *DB) InsertLogEntry(characterID int64, category string, status string, message string, error null.String) error {
 	_, err := squirrel.Insert("jobLogs").
-		Columns( "status", "message", "error", "characterId").
-		Values(entry.Status, entry.Message, entry.Error, entry.CharacterID).
+		Columns( "category", "status", "message", "error", "characterId").
+		Values(category, status, message, error, characterID).
 		RunWith(d.db).
 		Exec()
 

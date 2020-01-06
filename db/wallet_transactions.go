@@ -11,14 +11,7 @@ import sq "github.com/Masterminds/squirrel"
 
 func (d *DB) InsertWalletTransactions(characterID int64, transactions []models.WalletTransaction) error {
 	if len(transactions) == 0 {
-		err := d.InsertLogEntry(characterID, models.JobLogEntry{
-			Category:      "WALLET_TRANSACTIONS",
-			Status:        "SUCCESS",
-			Message:       "No new transactions",
-			Error:         null.String{},
-			CharacterID:   null.NewInt(characterID, true),
-			CorporationID: null.Int{},
-		})
+		err := d.InsertLogEntry(characterID, "WALLET_TRANSACTIONS", "SUCCESS", "No new transactions", null.String{})
 
 		if err != nil {
 			return fmt.Errorf("d.InsertLogEntry: %v", err)
@@ -50,14 +43,7 @@ func (d *DB) InsertWalletTransactions(characterID int64, transactions []models.W
 	result, err := builder.RunWith(d.db).Exec()
 
 	if err != nil {
-		err := d.InsertLogEntry(characterID, models.JobLogEntry{
-			Category:      "WALLET_TRANSACTIONS",
-			Status:        "FAILURE",
-			Message:       "Failed to get wallet transactions",
-			Error:         null.NewString(err.Error(), true),
-			CharacterID:   null.NewInt(characterID, true),
-			CorporationID: null.Int{},
-		})
+		err := d.InsertLogEntry(characterID, "WALLET_TRANSACTIONS", "FAILURE", "Failed to get wallet transactions", null.NewString(err.Error(), true))
 
 		if err != nil {
 			return fmt.Errorf("d.InsertLogEntry: %v", err)
@@ -73,14 +59,7 @@ func (d *DB) InsertWalletTransactions(characterID int64, transactions []models.W
 	}
 
 	if count > 0 {
-		err := d.InsertLogEntry(characterID, models.JobLogEntry{
-			Category:      "WALLET_TRANSACTIONS",
-			Status:        "SUCCESS",
-			Message:       fmt.Sprintf("Inserted %d new transactions", count),
-			Error:         null.String{},
-			CharacterID:   null.NewInt(characterID, true),
-			CorporationID: null.Int{},
-		})
+		err := d.InsertLogEntry(characterID, "WALLET_TRANSACTIONS", "SUCCESS", fmt.Sprintf("Inserted %d new transactions", count), null.String{})
 
 		if err != nil {
 			return fmt.Errorf("d.InsertLogEntry: %v", err)
@@ -88,14 +67,7 @@ func (d *DB) InsertWalletTransactions(characterID int64, transactions []models.W
 
 		log.Printf("Inserted %d new transactions for character ID: %d", count, characterID)
 	} else {
-		err := d.InsertLogEntry(characterID, models.JobLogEntry{
-			Category:      "WALLET_TRANSACTIONS",
-			Status:        "SUCCESS",
-			Message:       "No new transactions",
-			Error:         null.String{},
-			CharacterID:   null.NewInt(characterID, true),
-			CorporationID: null.Int{},
-		})
+		err := d.InsertLogEntry(characterID, "WALLET_TRANSACTIONS", "SUCCESS", "No new transactions", null.String{})
 
 		if err != nil {
 			return fmt.Errorf("d.InsertLogEntry: %v", err)
