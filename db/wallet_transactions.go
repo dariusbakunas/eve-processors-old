@@ -10,13 +10,16 @@ import (
 import sq "github.com/Masterminds/squirrel"
 
 func (d *DB) InsertWalletTransactions(characterID int64, transactions []models.WalletTransaction) error {
-	if len(transactions) == 0 {
-		err := d.InsertLogEntry(characterID, "WALLET_TRANSACTIONS", "SUCCESS", "No new transactions", null.String{})
+	defer func() {
+		err := d.Cleanup("WALLET_TRANSACTIONS", characterID)
 
 		if err != nil {
-			return fmt.Errorf("d.InsertLogEntry: %v", err)
+			log.Printf("d.Cleanup: %v", err)
 		}
+	}()
 
+	if len(transactions) == 0 {
+		d.InsertLogEntry(characterID, "WALLET_TRANSACTIONS", "SUCCESS", "No new transactions", null.String{})
 		log.Printf("No new transactions for character ID: %d", characterID)
 		return nil
 	}
@@ -43,12 +46,7 @@ func (d *DB) InsertWalletTransactions(characterID int64, transactions []models.W
 	result, err := builder.RunWith(d.db).Exec()
 
 	if err != nil {
-		err := d.InsertLogEntry(characterID, "WALLET_TRANSACTIONS", "FAILURE", "Failed to get wallet transactions", null.NewString(err.Error(), true))
-
-		if err != nil {
-			return fmt.Errorf("d.InsertLogEntry: %v", err)
-		}
-
+		d.InsertLogEntry(characterID, "WALLET_TRANSACTIONS", "FAILURE", "Failed to get wallet transactions", null.NewString(err.Error(), true))
 		return fmt.Errorf("builder.Exec: %v", err)
 	}
 
@@ -59,20 +57,10 @@ func (d *DB) InsertWalletTransactions(characterID int64, transactions []models.W
 	}
 
 	if count > 0 {
-		err := d.InsertLogEntry(characterID, "WALLET_TRANSACTIONS", "SUCCESS", fmt.Sprintf("Inserted %d new transactions", count), null.String{})
-
-		if err != nil {
-			return fmt.Errorf("d.InsertLogEntry: %v", err)
-		}
-
+		d.InsertLogEntry(characterID, "WALLET_TRANSACTIONS", "SUCCESS", fmt.Sprintf("Inserted %d new transactions", count), null.String{})
 		log.Printf("Inserted %d new transactions for character ID: %d", count, characterID)
 	} else {
-		err := d.InsertLogEntry(characterID, "WALLET_TRANSACTIONS", "SUCCESS", "No new transactions", null.String{})
-
-		if err != nil {
-			return fmt.Errorf("d.InsertLogEntry: %v", err)
-		}
-
+		d.InsertLogEntry(characterID, "WALLET_TRANSACTIONS", "SUCCESS", "No new transactions", null.String{})
 		log.Printf("No new transactions for character ID: %d", characterID)
 	}
 
