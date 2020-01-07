@@ -11,31 +11,33 @@ import (
 	"time"
 )
 
+import retry "github.com/hashicorp/go-retryablehttp"
+
 type Client struct {
 	BaseUrl string
 	Token   string
-	Timeout time.Duration
+	HttpClient *retry.Client
 }
 
 func NewEsiClient(baseUrl string, token string, timeout time.Duration) *Client {
+	client := retry.NewClient()
+
 	return &Client{
 		BaseUrl: baseUrl,
 		Token:   token,
-		Timeout: timeout,
+		HttpClient: client,
 	}
 }
 
 func (c *Client) get(url string) ([]byte, *http.Header, error) {
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := retry.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
 	req.Header.Set("Content-Type", "application/json")
-	client := &http.Client{
-		Timeout: c.Timeout,
-	}
+	client := c.HttpClient
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, nil, err
