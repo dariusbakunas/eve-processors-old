@@ -27,7 +27,7 @@ func (d *DB) Cleanup(category string, characterID int64) error {
 		Select("id").
 		From("jobLogs").
 		Where(squirrel.Eq{"category": category}).
-		OrderBy("createdAt DESC").Limit(5).
+		OrderBy("createdAt DESC").Limit(3).
 		RunWith(d.db).
 		Query()
 

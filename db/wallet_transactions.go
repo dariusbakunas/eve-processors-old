@@ -9,7 +9,7 @@ import (
 
 import sq "github.com/Masterminds/squirrel"
 
-func (d *DB) InsertWalletTransactions(characterID int64, transactions []models.WalletTransaction) error {
+func (d *DB) InsertWalletTransactions(characterID int64, transactions []models.WalletTransaction) (int64, error) {
 	defer func() {
 		err := d.Cleanup("WALLET_TRANSACTIONS", characterID)
 
@@ -21,7 +21,7 @@ func (d *DB) InsertWalletTransactions(characterID int64, transactions []models.W
 	if len(transactions) == 0 {
 		d.InsertLogEntry(characterID, "WALLET_TRANSACTIONS", "SUCCESS", "No new transactions", null.String{})
 		log.Printf("No new transactions for character ID: %d", characterID)
-		return nil
+		return 0, nil
 	}
 
 	builder := sq.Insert("walletTransactions").
@@ -46,23 +46,14 @@ func (d *DB) InsertWalletTransactions(characterID int64, transactions []models.W
 	result, err := builder.RunWith(d.db).Exec()
 
 	if err != nil {
-		d.InsertLogEntry(characterID, "WALLET_TRANSACTIONS", "FAILURE", "Failed to get wallet transactions", null.NewString(err.Error(), true))
-		return fmt.Errorf("builder.Exec: %v", err)
+		return 0, fmt.Errorf("builder.Exec: %v", err)
 	}
 
 	count, err := result.RowsAffected()
 
 	if err != nil {
-		return fmt.Errorf("result.RowsAffected: %v", err)
+		return 0, fmt.Errorf("result.RowsAffected: %v", err)
 	}
 
-	if count > 0 {
-		d.InsertLogEntry(characterID, "WALLET_TRANSACTIONS", "SUCCESS", fmt.Sprintf("Inserted %d new transactions", count), null.String{})
-		log.Printf("Inserted %d new transactions for character ID: %d", count, characterID)
-	} else {
-		d.InsertLogEntry(characterID, "WALLET_TRANSACTIONS", "SUCCESS", "No new transactions", null.String{})
-		log.Printf("No new transactions for character ID: %d", characterID)
-	}
-
-	return nil
+	return count, nil
 }
