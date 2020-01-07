@@ -10,14 +10,6 @@ import (
 import sq "github.com/Masterminds/squirrel"
 
 func (d *DB) InsertWalletTransactions(characterID int64, transactions []models.WalletTransaction) (int64, error) {
-	defer func() {
-		err := d.Cleanup("WALLET_TRANSACTIONS", characterID)
-
-		if err != nil {
-			log.Printf("d.Cleanup: %v", err)
-		}
-	}()
-
 	if len(transactions) == 0 {
 		d.InsertLogEntry(characterID, "WALLET_TRANSACTIONS", "SUCCESS", "No new transactions", null.String{})
 		log.Printf("No new transactions for character ID: %d", characterID)

@@ -22,7 +22,7 @@ func (d *DB) InsertLogEntry(characterID int64, category string, status string, m
 	}
 }
 
-func (d *DB) Cleanup(category string, characterID int64) error {
+func (d *DB) CleanupJobLogs(category string, characterID int64) error {
 	rows, err := squirrel.
 		Select("id").
 		From("jobLogs").

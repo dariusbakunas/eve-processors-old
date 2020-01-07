@@ -4,13 +4,11 @@ import (
 	"fmt"
 	"github.com/Masterminds/squirrel"
 	"github.com/dariusbakunas/eve-processors/models"
-	"log"
 )
 
-func (d *DB) InsertJournalEntries(characterID int64, entries []models.JournalEntry) error {
+func (d *DB) InsertJournalEntries(characterID int64, entries []models.JournalEntry) (int64, error) {
 	if len(entries) == 0 {
-		log.Printf("No new journal entries for character ID: %d", characterID)
-		return nil
+		return 0, nil
 	}
 
 	builder := squirrel.Insert("journalEntries").
@@ -39,20 +37,14 @@ func (d *DB) InsertJournalEntries(characterID int64, entries []models.JournalEnt
 	result, err := builder.RunWith(d.db).Exec()
 
 	if err != nil {
-		return fmt.Errorf("builder.Exec: %v", err)
+		return 0, fmt.Errorf("builder.Exec: %v", err)
 	}
 
 	count, err := result.RowsAffected()
 
 	if err != nil {
-		return fmt.Errorf("result.RowsAffected: %v", err)
+		return 0, fmt.Errorf("result.RowsAffected: %v", err)
 	}
 
-	if count > 0 {
-		log.Printf("Inserted %d new journal entries for character ID: %d", count, characterID)
-	} else {
-		log.Printf("No new journal entries for character ID: %d", characterID)
-	}
-
-	return nil
+	return count, nil
 }
