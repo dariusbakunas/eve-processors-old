@@ -1,7 +1,6 @@
 package db
 
 import (
-	"fmt"
 	"github.com/Masterminds/squirrel"
 	"gopkg.in/guregu/null.v3"
 	"log"
@@ -22,7 +21,7 @@ func (d *DB) InsertLogEntry(characterID int64, category string, status string, m
 	}
 }
 
-func (d *DB) CleanupJobLogs(category string, characterID int64) error {
+func (d *DB) CleanupJobLogs(category string, characterID int64) {
 	rows, err := squirrel.
 		Select("id").
 		From("jobLogs").
@@ -32,7 +31,7 @@ func (d *DB) CleanupJobLogs(category string, characterID int64) error {
 		Query()
 
 	if err != nil {
-		return fmt.Errorf("squirrel.Select: %v", err)
+		log.Printf("Failed cleaning up job logs: %v", err)
 	}
 
 	var ids []int
@@ -42,7 +41,7 @@ func (d *DB) CleanupJobLogs(category string, characterID int64) error {
 		err := rows.Scan(&id)
 
 		if err != nil {
-			return fmt.Errorf("rows.Scan: %v", err)
+			log.Printf("Failed cleaning up job logs: %v", err)
 		}
 
 		ids = append(ids, id)
@@ -56,8 +55,6 @@ func (d *DB) CleanupJobLogs(category string, characterID int64) error {
 		Exec()
 
 	if err != nil {
-		return fmt.Errorf("squirrel.Delete: %v", err)
+		log.Printf("Failed cleaning up job logs: %v", err)
 	}
-
-	return nil
 }

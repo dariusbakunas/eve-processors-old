@@ -10,11 +10,7 @@ import (
 
 func ProcessJournalEntries(dao *db.DB, client *esi.Client, characterID int64) error {
 	defer func() {
-		err := dao.CleanupJobLogs("WALLET_JOURNAL", characterID)
-
-		if err != nil {
-			log.Printf("d.CleanupJobLogs: %v", err)
-		}
+		dao.CleanupJobLogs("WALLET_JOURNAL", characterID)
 	}()
 
 	journalEntriesResponse, err := client.GetJournalEntries(characterID, 1)

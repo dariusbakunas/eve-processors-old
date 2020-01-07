@@ -10,11 +10,7 @@ import (
 
 func ProcessWalletTransactions(dao *db.DB, client *esi.Client, characterID int64) error {
 	defer func() {
-		err := dao.CleanupJobLogs("WALLET_TRANSACTIONS", characterID)
-
-		if err != nil {
-			log.Printf("d.CleanupJobLogs: %v", err)
-		}
+		dao.CleanupJobLogs("WALLET_TRANSACTIONS", characterID)
 	}()
 
 	transactions, err := client.GetWalletTransactions(characterID)
