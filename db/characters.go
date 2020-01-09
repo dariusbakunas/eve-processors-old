@@ -87,3 +87,17 @@ func (d *DB) UpdateCharacterTokens(accessToken string, refreshToken string, expi
 
 	return nil
 }
+
+func (d *DB) UpdateCharacterSP(characterID int64, totalSP int64) error {
+	_, err := sq.Update("characters").
+		Set("totalSp", totalSP).
+		Where(sq.Eq{"id": characterID}).
+		RunWith(d.db).
+		Exec()
+
+	if err != nil {
+		return fmt.Errorf("sq.Update: %v", err)
+	}
+
+	return nil
+}

@@ -20,7 +20,7 @@ func ProcessJournalEntries(dao *db.DB, client *esi.Client, characterID int64) er
 		return fmt.Errorf("client.GetJournalEntries: %v", err)
 	}
 
-	transactions := journalEntriesResponse.Entries
+	entries := journalEntriesResponse.Entries
 
 	if journalEntriesResponse.Pages > 1 {
 		for i := 2; i < journalEntriesResponse.Pages; i++ {
@@ -31,11 +31,11 @@ func ProcessJournalEntries(dao *db.DB, client *esi.Client, characterID int64) er
 				return fmt.Errorf("client.GetJournalEntries: %v, page: %d", err, i)
 			}
 
-			transactions = append(transactions, journalEntriesResponse.Entries...)
+			entries = append(entries, journalEntriesResponse.Entries...)
 		}
 	}
 
-	count, err := dao.InsertJournalEntries(characterID, transactions)
+	count, err := dao.InsertJournalEntries(characterID, entries)
 
 	if err != nil {
 		dao.InsertLogEntry(characterID, "WALLET_JOURNAL", "FAILURE", "Failed to get journal entries", null.NewString(err.Error(), true))

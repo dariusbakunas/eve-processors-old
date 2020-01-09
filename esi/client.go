@@ -75,11 +75,6 @@ func (c *Client) get(url string) ([]byte, *http.Header, error) {
 	return body, &resp.Header, nil
 }
 
-type JournalEntriesResponse struct {
-	Pages   int
-	Entries []models.JournalEntry
-}
-
 func (c *Client) GetWalletTransactions(characterId int64) ([]models.WalletTransaction, error) {
 	url := fmt.Sprintf("%s/characters/%d/wallet/transactions/", c.BaseUrl, characterId)
 	bytes, _, err := c.get(url)
@@ -94,7 +89,7 @@ func (c *Client) GetWalletTransactions(characterId int64) ([]models.WalletTransa
 	return data, nil
 }
 
-func (c *Client) GetJournalEntries(characterId int64, page int) (*JournalEntriesResponse, error) {
+func (c *Client) GetJournalEntries(characterId int64, page int) (*models.JournalEntriesResponse, error) {
 	url := fmt.Sprintf("%s/characters/%d/wallet/journal/?page=%d", c.BaseUrl, characterId, page)
 	bytes, headers, err := c.get(url)
 	if err != nil {
@@ -103,19 +98,37 @@ func (c *Client) GetJournalEntries(characterId int64, page int) (*JournalEntries
 
 	pagesStr := headers.Get("X-Pages")
 
-	pages, err := strconv.Atoi(pagesStr)
+	pages := 1
 
-	if err != nil {
-		return nil, fmt.Errorf("strconv.Atoi: %v", err)
+	if pagesStr != "" {
+		pages, err = strconv.Atoi(pagesStr)
+		if err != nil {
+			return nil, fmt.Errorf("strconv.Atoi: %v", err)
+		}
 	}
 
 	var data []models.JournalEntry
 	err = json.Unmarshal(bytes, &data)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("json.Unmarshal: %v", err)
 	}
-	return &JournalEntriesResponse{
+	return &models.JournalEntriesResponse{
 		Pages:   pages,
 		Entries: data,
 	}, nil
+}
+
+func (c *Client) GetSkills(characterID int64) (*models.SkillsResponse, error) {
+	url := fmt.Sprintf("%s/characters/%d/skills", c.BaseUrl, characterID)
+	bytes, _, err := c.get(url)
+	if err != nil {
+		return nil, fmt.Errorf("c.get: %v", err)
+	}
+
+	var data models.SkillsResponse
+	err = json.Unmarshal(bytes, &data)
+	if err != nil {
+		return nil, fmt.Errorf("json.Unmarshal: %v", err)
+	}
+	return &data, nil
 }

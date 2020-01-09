@@ -115,3 +115,21 @@ func ProcessCharacterJournalEntries(ctx context.Context, m PubSubMessage) error 
 
 	return nil
 }
+
+func ProcessCharacterSkills(ctx context.Context, m PubSubMessage) error {
+	init, err := initialize(m)
+
+	if err != nil {
+		return fmt.Errorf("initialize: %v", err)
+	}
+
+	defer init.dao.Close()
+
+	err = processors.ProcessSkills(init.dao, init.esiClient, init.characterID)
+
+	if err != nil {
+		return fmt.Errorf("processors.ProcessSkills: %v", err)
+	}
+
+	return nil
+}

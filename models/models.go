@@ -35,6 +35,11 @@ type JournalEntry struct {
 	TaxReceiverID null.Int            `json:"tax_receiver_id"`
 }
 
+type JournalEntriesResponse struct {
+	Pages   int
+	Entries []JournalEntry
+}
+
 type JobLogEntry struct {
 	ID            null.Int
 	CreatedAt     null.Time
@@ -44,4 +49,17 @@ type JobLogEntry struct {
 	Error         null.String
 	CharacterID   null.Int
 	CorporationID null.Int
+}
+
+type CharacterSkill struct {
+	ActiveSkillLevel int   `json:"active_skill_level"`
+	SkillID          int   `json:"skill_id"`
+	SP               int64 `json:"skillpoints_in_skill"`
+	TrainedLevel     int   `json:"trained_skill_level"`
+}
+
+type SkillsResponse struct {
+	Skills        []CharacterSkill `json:"skills"`
+	TotalSP       int64            `json:"total_sp"`
+	UnallocatedSP int              `json:"unallocated_sp"`
 }
