@@ -37,6 +37,8 @@ func (d *DB) CleanupJobLogs(category string, characterID int64) {
 
 	var ids []int
 
+	defer rows.Close()
+
 	for rows.Next() {
 		var id int
 		err := rows.Scan(&id)

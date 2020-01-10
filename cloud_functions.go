@@ -1,4 +1,4 @@
-package esi
+package eve_processors
 
 import (
 	"context"

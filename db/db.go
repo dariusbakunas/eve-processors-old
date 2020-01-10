@@ -26,6 +26,9 @@ func NewDB(connection string, database string, username string, password string,
 
 	crypt := &utils.Crypt{Key: tokenSecret}
 
+	db.SetMaxOpenConns(20)
+	db.SetMaxIdleConns(5)
+
 	return &DB {
 		db: db,
 		crypt: crypt,

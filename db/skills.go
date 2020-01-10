@@ -16,27 +16,48 @@ func (d *DB) InsertSkills(characterID int64, skills []models.CharacterSkill) (in
 	updated := 0
 	inserted := 0
 
+	rows, err := squirrel.Select("skillId").
+		From("characterSkills").
+		Where(sq.Eq{"characterId": characterID}).
+		RunWith(d.db).
+		Query()
+
+	if err != nil {
+		return 0, 0, fmt.Errorf("squirrel.Update: %v", err)
+	}
+
+	defer rows.Close()
+
+	idSet := make(map[int]bool)
+
+	for rows.Next() {
+		var id int
+		err := rows.Scan(&id)
+
+		if err != nil {
+			return 0, 0, fmt.Errorf("rows.Next: %v", err)
+		}
+
+		idSet[id] = true
+	}
+
 	for _, skill := range skills {
-		result, err := squirrel.Update("characterSkills").
-			Set("activeSkillLevel", skill.ActiveSkillLevel).
-			Set("skillPointsInSkill", skill.SP).
-			Set("trainedSkillLevel", skill.TrainedLevel).
-			Where(sq.Eq{"characterId": characterID}).
-			Where(sq.Eq{"skillId": skill.SkillID}).
-			RunWith(d.db).
-			Exec()
+		if idSet[skill.SkillID] {
+			_, err := squirrel.Update("characterSkills").
+				Set("activeSkillLevel", skill.ActiveSkillLevel).
+				Set("skillPointsInSkill", skill.SP).
+				Set("trainedSkillLevel", skill.TrainedLevel).
+				Where(sq.Eq{"characterId": characterID}).
+				Where(sq.Eq{"skillId": skill.SkillID}).
+				RunWith(d.db).
+				Exec()
 
-		if err != nil {
-			return 0, 0, fmt.Errorf("squirrel.Update: %v", err)
-		}
+			if err != nil {
+				return 0, 0, fmt.Errorf("squirrel.Update: %v", err)
+			}
 
-		count, err := result.RowsAffected()
-
-		if err != nil {
-			return 0, 0, fmt.Errorf("result.RowsAffected: %v", err)
-		}
-
-		if count == 0 {
+			updated++
+		} else {
 			_, err := squirrel.Insert("characterSkills").
 				Columns("skillId", "activeSkillLevel", "skillPointsInSkill", "trainedSkillLevel", "characterId").
 				Values(skill.SkillID, skill.ActiveSkillLevel, skill.SP, skill.TrainedLevel, characterID).
@@ -48,8 +69,6 @@ func (d *DB) InsertSkills(characterID int64, skills []models.CharacterSkill) (in
 			}
 
 			inserted ++
-		} else {
-			updated ++
 		}
 	}
 
