@@ -46,6 +46,10 @@ func (d *DB) InsertSkills(characterID int64, skills []models.CharacterSkill) (in
 			if err != nil {
 				return 0, 0, fmt.Errorf("squirrel.Insert: %v", err)
 			}
+
+			inserted ++
+		} else {
+			updated ++
 		}
 	}
 
