@@ -1,16 +1,7 @@
 package main
 
-import (
-	"log"
-)
-import "github.com/joho/godotenv"
-import esi "github.com/dariusbakunas/eve-processors"
+import "github.com/dariusbakunas/eve-processors/cmd"
 
 func main() {
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-
-	esi.ProcessCharacters()
+  cmd.Execute()
 }
