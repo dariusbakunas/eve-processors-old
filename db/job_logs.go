@@ -26,7 +26,8 @@ func (d *DB) CleanupJobLogs(category string, characterID int64) {
 		Select("id").
 		From("jobLogs").
 		Where(squirrel.Eq{"category": category}).
-		OrderBy("createdAt DESC").Limit(3).
+		Where(squirrel.Eq{"characterId": characterID}).
+		OrderBy("createdAt DESC").Limit(4).
 		RunWith(d.db).
 		Query()
 

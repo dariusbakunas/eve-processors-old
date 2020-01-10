@@ -20,7 +20,7 @@ func (d *DB) InsertSkills(characterID int64, skills []models.CharacterSkill) (in
 		result, err := squirrel.Update("characterSkills").
 			Set("activeSkillLevel", skill.ActiveSkillLevel).
 			Set("skillPointsInSkill", skill.SP).
-			Set("trainedSkillLevel", skill.SP).
+			Set("trainedSkillLevel", skill.TrainedLevel).
 			Where(sq.Eq{"characterId": characterID}).
 			Where(sq.Eq{"skillId": skill.SkillID}).
 			RunWith(d.db).
