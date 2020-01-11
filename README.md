@@ -8,4 +8,5 @@ $ gcloud functions deploy --runtime=go111 --trigger-topic=esi-character-wallet-t
 $ gcloud functions deploy --runtime=go111 --trigger-topic=esi-character-journal-entries ProcessCharacterJournalEntries --env-vars-file .env.yaml
 $ gcloud functions deploy --runtime=go111 --trigger-topic=esi-character-skills ProcessCharacterSkills --env-vars-file .env.yaml
 $ gcloud functions deploy --runtime=go111 --trigger-topic=esi-character-skill-queue ProcessCharacterSkillQueue --env-vars-file .env.yaml
+$ gcloud functions deploy --runtime=go111 --trigger-topic=esi-character-market-orders ProcessCharacterMarketOrders --env-vars-file .env.yaml
 ```

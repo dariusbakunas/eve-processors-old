@@ -8,7 +8,7 @@ import (
 	"gopkg.in/guregu/null.v3"
 )
 
-func ProcessMarketOrders(dao *db.DB, client *esi.Client, characterID int64) error {
+func ProcessCharacterMarketOrders(dao *db.DB, client *esi.Client, characterID int64) error {
 	defer func() {
 		dao.CleanupJobLogs("MARKET_ORDERS", characterID)
 	}()

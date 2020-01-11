@@ -90,12 +90,16 @@ func ProcessCharacter(dao *db.DB, character db.Character) error {
 
 	if strings.Contains(character.Scopes, "esi-markets.read_character_orders.v1") {
 		if projectID != "" {
-
-		} else {
-			err = ProcessMarketOrders(dao, client, character.ID)
+			err = pubsub.PublishMessage(dao, projectID, "PUBSUB_CHARACTER_MARKET_ORDERS_ID", character.ID, accessToken)
 
 			if err != nil {
-				return fmt.Errorf("ProcessMarketOrders: %v", err)
+				return fmt.Errorf("PublishMessage PUBSUB_CHARACTER_MARKET_ORDERS_ID: %v", err)
+			}
+		} else {
+			err = ProcessCharacterMarketOrders(dao, client, character.ID)
+
+			if err != nil {
+				return fmt.Errorf("ProcessCharacterMarketOrders: %v", err)
 			}
 		}
 	}

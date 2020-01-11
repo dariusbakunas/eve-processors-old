@@ -151,3 +151,21 @@ func ProcessCharacterSkillQueue(ctx context.Context, m PubSubMessage) error {
 
 	return nil
 }
+
+func ProcessCharacterMarketOrders(ctx context.Context, m PubSubMessage) error {
+	init, err := initialize(m)
+
+	if err != nil {
+		return fmt.Errorf("initialize: %v", err)
+	}
+
+	defer init.dao.Close()
+
+	err = processors.ProcessCharacterMarketOrders(init.dao, init.esiClient, init.characterID)
+
+	if err != nil {
+		return fmt.Errorf("processors.ProcessSkillQueue: %v", err)
+	}
+
+	return nil
+}
