@@ -35,7 +35,7 @@ func (d *DB) InsertSkills(characterID int64, skills []models.CharacterSkill) (in
 		err := rows.Scan(&id)
 
 		if err != nil {
-			return 0, 0, fmt.Errorf("rows.Next: %v", err)
+			return 0, 0, fmt.Errorf("rows.Scan: %v", err)
 		}
 
 		idSet[id] = true

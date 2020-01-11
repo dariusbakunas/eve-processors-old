@@ -88,5 +88,17 @@ func ProcessCharacter(dao *db.DB, character db.Character) error {
 		}
 	}
 
+	if strings.Contains(character.Scopes, "esi-markets.read_character_orders.v1") {
+		if projectID != "" {
+
+		} else {
+			err = ProcessMarketOrders(dao, client, character.ID)
+
+			if err != nil {
+				return fmt.Errorf("ProcessMarketOrders: %v", err)
+			}
+		}
+	}
+
 	return nil
 }

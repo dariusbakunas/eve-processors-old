@@ -146,3 +146,47 @@ func (c *Client) GetSkillQueue(characterID int64) ([]models.SkillQueueItem, erro
 	}
 	return data, nil
 }
+
+func (c *Client) GetMarketOrders(characterID int64) ([]models.MarketOrder, error) {
+	url := fmt.Sprintf("%s/characters/%d/orders", c.BaseUrl, characterID)
+	bytes, _, err := c.get(url)
+	if err != nil {
+		return nil, fmt.Errorf("c.get: %v", err)
+	}
+	var data []models.MarketOrder
+	err = json.Unmarshal(bytes, &data)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+func (c *Client) GetMarketOrderHistory(characterID int64, page int) (*models.MarketOrderHistoryResponse, error) {
+	url := fmt.Sprintf("%s/characters/%d/orders/history/?page=%d", c.BaseUrl, characterID, page)
+	bytes, headers, err := c.get(url)
+	if err != nil {
+		return nil, err
+	}
+
+	pagesStr := headers.Get("X-Pages")
+
+	pages := 1
+
+	if pagesStr != "" {
+		pages, err = strconv.Atoi(pagesStr)
+		if err != nil {
+			return nil, fmt.Errorf("strconv.Atoi: %v", err)
+		}
+	}
+
+	var data []models.MarketOrder
+	err = json.Unmarshal(bytes, &data)
+	if err != nil {
+		return nil, fmt.Errorf("json.Unmarshal: %v", err)
+	}
+
+	return &models.MarketOrderHistoryResponse{
+		Orders: data,
+		Pages:  pages,
+	}, nil
+}

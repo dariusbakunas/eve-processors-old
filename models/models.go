@@ -74,3 +74,26 @@ type SkillQueueItem struct {
 	StartDate       null.Time `json:"start_date"`
 	TrainingStartSP null.Int  `json:"training_start_sp"`
 }
+
+type MarketOrder struct {
+	Duration      int                 `json:"duration"`
+	Escrow        decimal.NullDecimal `json:"escrow"`
+	IsBuy         bool                `json:"is_buy_order"`
+	Issued        time.Time           `json:"issued"`
+	IsCorporation bool                `json:"is_corporation"`
+	LocationID    int64               `json:"location_id"`
+	MinVolume     null.Int            `json:"min_volume"`
+	OrderID       int64               `json:"order_id"`
+	Price         decimal.Decimal     `json:"price"`
+	Range         string              `json:"range"`
+	RegionID      int                 `json:"region_id"`
+	State         null.String         `json:"state"`
+	TypeID        int                 `json:"type_id"`
+	VolumeRemain  int                 `json:"volume_remain"`
+	VolumeTotal   int                 `json:"volume_total"`
+}
+
+type MarketOrderHistoryResponse struct {
+	Orders []MarketOrder
+	Pages  int
+}
