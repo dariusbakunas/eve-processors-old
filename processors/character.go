@@ -67,11 +67,23 @@ func ProcessCharacter(dao *db.DB, character db.Character) error {
 			if err != nil {
 				return fmt.Errorf("PublishMessage PUBSUB_SKILLS_ID: %v", err)
 			}
+
+			err = pubsub.PublishMessage(dao, projectID, "PUBSUB_SKILL_QUEUE_ID", character.ID, accessToken)
+
+			if err != nil {
+				return fmt.Errorf("PublishMessage PUBSUB_SKILL_QUEUE_ID: %v", err)
+			}
 		} else {
 			err = ProcessSkills(dao, client, character.ID)
 
 			if err != nil {
 				return fmt.Errorf("ProcessSkills: %v", err)
+			}
+
+			err = ProcessSkillQueue(dao, client, character.ID)
+
+			if err != nil {
+				return fmt.Errorf("ProcessSkillQueue: %v", err)
 			}
 		}
 	}

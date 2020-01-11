@@ -79,5 +79,33 @@ func (d *DB) Encrypt(plainText string) (string, error) {
 }
 
 func (d *DB) Decrypt(cipherText string) (string, error) {
-	return d.crypt.Decrypt(cipherText);
+	d.db.Begin()
+	return d.crypt.Decrypt(cipherText)
+}
+
+type TxFn func(tx *sql.Tx) error
+
+func (d *DB) withTransaction(fn TxFn) error {
+	tx, err := d.db.Begin()
+
+	if err != nil {
+		return fmt.Errorf("db.Behin: %v", err)
+	}
+
+	defer func() {
+		if p := recover(); p != nil {
+			// a panic occurred, rollback and repanic
+			tx.Rollback()
+			panic(p)
+		} else if err != nil {
+			// something went wrong, rollback
+			tx.Rollback()
+		} else {
+			// all good, commit
+			err = tx.Commit()
+		}
+	}()
+
+	err = fn(tx)
+	return err
 }

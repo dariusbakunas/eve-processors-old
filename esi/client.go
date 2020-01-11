@@ -132,3 +132,17 @@ func (c *Client) GetSkills(characterID int64) (*models.SkillsResponse, error) {
 	}
 	return &data, nil
 }
+
+func (c *Client) GetSkillQueue(characterID int64) ([]models.SkillQueueItem, error) {
+	url := fmt.Sprintf("%s/characters/%d/skillqueue", c.BaseUrl, characterID)
+	bytes, _, err := c.get(url)
+	if err != nil {
+		return nil, fmt.Errorf("c.get: %v", err)
+	}
+	var data []models.SkillQueueItem
+	err = json.Unmarshal(bytes, &data)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}

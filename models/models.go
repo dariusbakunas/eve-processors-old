@@ -63,3 +63,14 @@ type SkillsResponse struct {
 	TotalSP       int64            `json:"total_sp"`
 	UnallocatedSP int              `json:"unallocated_sp"`
 }
+
+type SkillQueueItem struct {
+	FinishDate      null.Time `json:"finish_date"`
+	FinishedLevel   int       `json:"finished_level"`
+	LevelEndSP      null.Int  `json:"level_end_sp"`
+	LevelStartSP    null.Int  `json:"level_start_sp"`
+	QueuePosition   int       `json:"queue_position"`
+	SkillID         int       `json:"skill_id"`
+	StartDate       null.Time `json:"start_date"`
+	TrainingStartSP null.Int  `json:"training_start_sp"`
+}
