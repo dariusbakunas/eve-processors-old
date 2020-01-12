@@ -97,3 +97,19 @@ type MarketOrderHistoryResponse struct {
 	Orders []MarketOrder
 	Pages  int
 }
+
+type Blueprint struct {
+	ID           int64  `json:"item_id"`
+	LocationFlag string `json:"location_flag"`
+	LocationID   int64  `json:"location_id"`
+	ME           int    `json:"material_efficiency"`
+	Quantity     int    `json:"quantity"`
+	Runs         int    `json:"runs"`
+	TE           int    `json:"time_efficiency"`
+	TypeID       int    `json:"type_id"`
+}
+
+type BlueprintsResponse struct {
+	Blueprints []Blueprint
+	Pages      int
+}

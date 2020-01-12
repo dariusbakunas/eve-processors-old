@@ -190,3 +190,33 @@ func (c *Client) GetMarketOrderHistory(characterID int64, page int) (*models.Mar
 		Pages:  pages,
 	}, nil
 }
+
+func (c *Client) GetBlueprints(characterID int64, page int) (*models.BlueprintsResponse, error) {
+	url := fmt.Sprintf("%s/characters/%d/blueprints/?page=%d", c.BaseUrl, characterID, page)
+	bytes, headers, err := c.get(url)
+	if err != nil {
+		return nil, err
+	}
+
+	pagesStr := headers.Get("X-Pages")
+
+	pages := 1
+
+	if pagesStr != "" {
+		pages, err = strconv.Atoi(pagesStr)
+		if err != nil {
+			return nil, fmt.Errorf("strconv.Atoi: %v", err)
+		}
+	}
+
+	var data []models.Blueprint
+	err = json.Unmarshal(bytes, &data)
+	if err != nil {
+		return nil, fmt.Errorf("json.Unmarshal: %v", err)
+	}
+
+	return &models.BlueprintsResponse{
+		Blueprints: data,
+		Pages:  pages,
+	}, nil
+}

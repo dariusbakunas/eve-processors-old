@@ -23,7 +23,7 @@ func (d *DB) InsertSkills(characterID int64, skills []models.CharacterSkill) (in
 		Query()
 
 	if err != nil {
-		return 0, 0, fmt.Errorf("squirrel.Update: %v", err)
+		return 0, 0, fmt.Errorf("squirrel.Select: %v", err)
 	}
 
 	defer rows.Close()

@@ -53,7 +53,7 @@ func ProcessCharacterMarketOrders(dao *db.DB, client *esi.Client, characterID in
 	inserted, updated, err := dao.UpdateMarketOrders(characterID, activeOrders, filteredHistory)
 
 	if err != nil {
-		dao.InsertLogEntry(characterID, "MARKET_ORDERS", "FAILURE", "Failed to get market orders", null.NewString(err.Error(), true))
+		dao.InsertLogEntry(characterID, "MARKET_ORDERS", "FAILURE", "Failed to update market orders", null.NewString(err.Error(), true))
 		return fmt.Errorf("dao.UpdateMarketOrders: %v", err)
 	}
 

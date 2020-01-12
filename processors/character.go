@@ -104,5 +104,21 @@ func ProcessCharacter(dao *db.DB, character db.Character) error {
 		}
 	}
 
+	if strings.Contains(character.Scopes, "esi-characters.read_blueprints.v1") {
+		if projectID != "" {
+			err = pubsub.PublishMessage(dao, projectID, "PUBSUB_CHARACTER_BLUEPRINTS_ID", character.ID, accessToken)
+
+			if err != nil {
+				return fmt.Errorf("PublishMessage PUBSUB_CHARACTER_BLUEPRINTS_ID: %v", err)
+			}
+		} else {
+			err = ProcessBlueprints(dao, client, character.ID)
+
+			if err != nil {
+				return fmt.Errorf("ProcessBlueprints: %v", err)
+			}
+		}
+	}
+
 	return nil
 }
