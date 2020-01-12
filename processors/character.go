@@ -10,7 +10,26 @@ import (
 	"time"
 )
 
+type FnRef struct {
+	fn   func(dao *db.DB, client *esi.Client, characterID int64) error
+	name string
+}
+
 func ProcessCharacter(dao *db.DB, character db.Character) error {
+	messageMap := map[string][]string{
+		"esi-wallet.read_character_wallet.v1":  {"PUBSUB_WALLET_TRANSACTIONS_TOPIC_ID", "PUBSUB_JOURNAL_ENTRIES_TOPIC_ID"},
+		"esi-skills.read_skills.v1":            {"PUBSUB_SKILLS_ID", "PUBSUB_SKILL_QUEUE_ID"},
+		"esi-markets.read_character_orders.v1": {"PUBSUB_CHARACTER_MARKET_ORDERS_ID"},
+		"esi-characters.read_blueprints.v1":    {"PUBSUB_CHARACTER_BLUEPRINTS_ID"},
+	}
+
+	fnMap := map[string][]FnRef {
+		"esi-wallet.read_character_wallet.v1":  {FnRef{fn: ProcessWalletTransactions, name: "ProcessWalletTransactions" }, FnRef{fn: ProcessJournalEntries, name: "ProcessJournalEntries" }},
+		"esi-skills.read_skills.v1":            {FnRef{fn: ProcessSkills, name: "ProcessSkills"}, FnRef{fn: ProcessSkillQueue, name: "ProcessSkillQueue"}},
+		"esi-markets.read_character_orders.v1": {FnRef{fn: ProcessCharacterMarketOrders, name: "ProcessCharacterMarketOrders"}},
+		"esi-characters.read_blueprints.v1":    {FnRef{fn: ProcessBlueprints, name: "ProcessBlueprints"}},
+	}
+
 	eveClientId := os.Getenv("EVE_CLIENT_ID")
 
 	if eveClientId == "" {
@@ -29,93 +48,31 @@ func ProcessCharacter(dao *db.DB, character db.Character) error {
 		return fmt.Errorf("getAccessToken: %v", err);
 	}
 
-	client := esi.NewEsiClient("https://esi.evetech.net/latest", accessToken, time.Second * 3)
+	client := esi.NewEsiClient("https://esi.evetech.net/latest", accessToken, time.Second*3)
 	projectID := os.Getenv("GOOGLE_CLOUD_PROJECT")
 
-	if strings.Contains(character.Scopes, "esi-wallet.read_character_wallet.v1") {
+	scopes := strings.Split(character.Scopes, " ")
+
+	for _, scope := range scopes {
 		if projectID != "" {
-			err = pubsub.PublishMessage(dao, projectID, "PUBSUB_WALLET_TRANSACTIONS_TOPIC_ID", character.ID, accessToken)
+			if messages, ok := messageMap[scope]; ok {
+				for _, message := range messages {
+					err = pubsub.PublishMessage(dao, projectID, message, character.ID, accessToken)
 
-			if err != nil {
-				return fmt.Errorf("PublishMessage PUBSUB_WALLET_TRANSACTIONS_TOPIC_ID: %v", err)
-			}
-
-			err = pubsub.PublishMessage(dao, projectID, "PUBSUB_JOURNAL_ENTRIES_TOPIC_ID", character.ID, accessToken)
-
-			if err != nil {
-				return fmt.Errorf("PublishMessage PUBSUB_JOURNAL_ENTRIES_TOPIC_ID: %v", err)
+					if err != nil {
+						return fmt.Errorf("PublishMessage %s: %v", message, err)
+					}
+				}
 			}
 		} else {
-			err := ProcessWalletTransactions(dao, client, character.ID)
+			if functions, ok := fnMap[scope]; ok {
+				for _, fnRef := range functions {
+					err = fnRef.fn(dao, client, character.ID)
 
-			if err != nil {
-				return fmt.Errorf("ProcessWalletTransactions: %v", err)
-			}
-
-			err = ProcessJournalEntries(dao, client, character.ID)
-
-			if err != nil {
-				return fmt.Errorf("ProcessJournalEntries: %v", err)
-			}
-		}
-	}
-
-	if strings.Contains(character.Scopes, "esi-skills.read_skills.v1") {
-		if projectID != "" {
-			err = pubsub.PublishMessage(dao, projectID, "PUBSUB_SKILLS_ID", character.ID, accessToken)
-
-			if err != nil {
-				return fmt.Errorf("PublishMessage PUBSUB_SKILLS_ID: %v", err)
-			}
-
-			err = pubsub.PublishMessage(dao, projectID, "PUBSUB_SKILL_QUEUE_ID", character.ID, accessToken)
-
-			if err != nil {
-				return fmt.Errorf("PublishMessage PUBSUB_SKILL_QUEUE_ID: %v", err)
-			}
-		} else {
-			err = ProcessSkills(dao, client, character.ID)
-
-			if err != nil {
-				return fmt.Errorf("ProcessSkills: %v", err)
-			}
-
-			err = ProcessSkillQueue(dao, client, character.ID)
-
-			if err != nil {
-				return fmt.Errorf("ProcessSkillQueue: %v", err)
-			}
-		}
-	}
-
-	if strings.Contains(character.Scopes, "esi-markets.read_character_orders.v1") {
-		if projectID != "" {
-			err = pubsub.PublishMessage(dao, projectID, "PUBSUB_CHARACTER_MARKET_ORDERS_ID", character.ID, accessToken)
-
-			if err != nil {
-				return fmt.Errorf("PublishMessage PUBSUB_CHARACTER_MARKET_ORDERS_ID: %v", err)
-			}
-		} else {
-			err = ProcessCharacterMarketOrders(dao, client, character.ID)
-
-			if err != nil {
-				return fmt.Errorf("ProcessCharacterMarketOrders: %v", err)
-			}
-		}
-	}
-
-	if strings.Contains(character.Scopes, "esi-characters.read_blueprints.v1") {
-		if projectID != "" {
-			err = pubsub.PublishMessage(dao, projectID, "PUBSUB_CHARACTER_BLUEPRINTS_ID", character.ID, accessToken)
-
-			if err != nil {
-				return fmt.Errorf("PublishMessage PUBSUB_CHARACTER_BLUEPRINTS_ID: %v", err)
-			}
-		} else {
-			err = ProcessBlueprints(dao, client, character.ID)
-
-			if err != nil {
-				return fmt.Errorf("ProcessBlueprints: %v", err)
+					if err != nil {
+						return fmt.Errorf("%s: %v", fnRef.name, err)
+					}
+				}
 			}
 		}
 	}
