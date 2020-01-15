@@ -48,7 +48,7 @@ func ProcessCharacter(dao *db.DB, character db.Character) error {
 		return fmt.Errorf("getAccessToken: %v", err);
 	}
 
-	client := esi.NewEsiClient("https://esi.evetech.net/latest", accessToken, time.Second*3)
+	client := esi.NewAuthenticatedEsiClient("https://esi.evetech.net/latest", accessToken, time.Second * 3)
 	projectID := os.Getenv("GOOGLE_CLOUD_PROJECT")
 
 	scopes := strings.Split(character.Scopes, " ")

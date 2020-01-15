@@ -75,7 +75,7 @@ type SkillQueueItem struct {
 	TrainingStartSP null.Int  `json:"training_start_sp"`
 }
 
-type MarketOrder struct {
+type CharacterMarketOrder struct {
 	Duration      int                 `json:"duration"`
 	Escrow        decimal.NullDecimal `json:"escrow"`
 	IsBuy         bool                `json:"is_buy_order"`
@@ -94,7 +94,7 @@ type MarketOrder struct {
 }
 
 type MarketOrderHistoryResponse struct {
-	Orders []MarketOrder
+	Orders []CharacterMarketOrder
 	Pages  int
 }
 
@@ -112,4 +112,31 @@ type Blueprint struct {
 type BlueprintsResponse struct {
 	Blueprints []Blueprint
 	Pages      int
+}
+
+type MarketOrder struct {
+	Duration     int             `json:"duration"`
+	IsBuy        bool            `json:"is_buy_order"`
+	Issued       time.Time       `json:"issued"`
+	LocationID   int64           `json:"location_id"`
+	MinVolume    int             `json:"min_volume"`
+	OrderID      int64           `json:"order_id"`
+	Price        decimal.Decimal `json:"price"`
+	SystemID     int             `json:"system_id"`
+	Range        string          `json:"range"`
+	TypeID       int             `json:"type_id"`
+	VolumeRemain int             `json:"volume_remain"`
+	VolumeTotal  int             `json:"volume_total"`
+}
+
+type MarketOrderPriceItem struct {
+	TypeID int
+	BuyPrice decimal.Decimal
+	SellPrice decimal.Decimal
+	SystemID int
+}
+
+type MarketOrderResponse struct {
+	Orders []MarketOrder
+	Pages  int
 }

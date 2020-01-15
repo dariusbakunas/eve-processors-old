@@ -16,38 +16,31 @@ limitations under the License.
 package cmd
 
 import (
-	"github.com/dariusbakunas/eve-processors"
+	eve_processors "github.com/dariusbakunas/eve-processors"
 	"github.com/joho/godotenv"
-	"log"
-
 	"github.com/spf13/cobra"
+	"log"
 )
 
-// manualCmd represents the manual command
-var manualCmd = &cobra.Command{
-	Use:   "manual",
-	Short: "Process all characters locally",
-	Long: `Process all characters locally`,
+// marketCmd represents the market command
+var marketCmd = &cobra.Command{
+	Use:   "market",
+	Short: "Update global market orders",
+	Long: `Update global market orders`,
 	Run: func(cmd *cobra.Command, args []string) {
 		err := godotenv.Load("../.env")
 		if err != nil {
 			log.Fatal("Error loading .env file")
 		}
 
-		eve_processors.ProcessCharacters()
+		err = eve_processors.ProcessMarketOrders()
+
+		if err != nil {
+			log.Fatalf("eve_processors.ProcessMarketOrders: %v", err)
+		}
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(manualCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// manualCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// manualCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.AddCommand(marketCmd)
 }

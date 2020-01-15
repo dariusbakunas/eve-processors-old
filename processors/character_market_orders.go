@@ -13,11 +13,11 @@ func ProcessCharacterMarketOrders(dao *db.DB, client *esi.Client, characterID in
 		dao.CleanupJobLogs("MARKET_ORDERS", characterID)
 	}()
 
-	activeOrders, err := client.GetMarketOrders(characterID)
+	activeOrders, err := client.GetCharacterMarketOrders(characterID)
 
 	if err != nil {
 		dao.InsertLogEntry(characterID, "MARKET_ORDERS", "FAILURE", "Failed to get market orders", null.NewString(err.Error(), true))
-		return fmt.Errorf("client.GetMarketOrders: %v", err)
+		return fmt.Errorf("client.GetCharacterMarketOrders: %v", err)
 	}
 
 	orderHistoryResponse, err := client.GetMarketOrderHistory(characterID, 1)
@@ -43,18 +43,18 @@ func ProcessCharacterMarketOrders(dao *db.DB, client *esi.Client, characterID in
 	}
 
 	// orders with duration 0 just replicate market transactions, filter these out
-	filteredHistory := make([]models.MarketOrder, 0)
+	filteredHistory := make([]models.CharacterMarketOrder, 0)
 	for _, v := range orderHistory {
 		if v.Duration != 0 {
 			filteredHistory = append(filteredHistory, v)
 		}
 	}
 
-	inserted, updated, err := dao.UpdateMarketOrders(characterID, activeOrders, filteredHistory)
+	inserted, updated, err := dao.UpdateCharacterMarketOrders(characterID, activeOrders, filteredHistory)
 
 	if err != nil {
 		dao.InsertLogEntry(characterID, "MARKET_ORDERS", "FAILURE", "Failed to update market orders", null.NewString(err.Error(), true))
-		return fmt.Errorf("dao.UpdateMarketOrders: %v", err)
+		return fmt.Errorf("dao.UpdateCharacterMarketOrders: %v", err)
 	}
 
 	dao.InsertLogEntry(characterID, "MARKET_ORDERS", "SUCCESS", fmt.Sprintf("Inserted %d new market orders and updated %d orders", inserted, updated), null.String{})

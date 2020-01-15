@@ -109,3 +109,20 @@ func (d *DB) withTransaction(fn TxFn) error {
 	err = fn(tx)
 	return err
 }
+
+func (d *DB) getIDSet(rows *sql.Rows) (map[int64]bool, error) {
+	idSet := make(map[int64]bool)
+
+	for rows.Next() {
+		var id int64
+		err := rows.Scan(&id)
+
+		if err != nil {
+			return nil, fmt.Errorf("rows.Scan: %v", err)
+		}
+
+		idSet[id] = true
+	}
+
+	return idSet, nil
+}

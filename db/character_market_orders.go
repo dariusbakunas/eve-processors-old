@@ -45,7 +45,7 @@ func (d *DB) getActiveOrders(characterID int64) (map[int64]activeOrder, error) {
 	return activeOrders, nil
 }
 
-func (d *DB) UpdateMarketOrders(characterID int64, orders []models.MarketOrder, history []models.MarketOrder) (int64, int64, error) {
+func (d *DB) UpdateCharacterMarketOrders(characterID int64, orders []models.CharacterMarketOrder, history []models.CharacterMarketOrder) (int64, int64, error) {
 	allOrders := append(orders, history...)
 
 	activeOrders, err := d.getActiveOrders(characterID)

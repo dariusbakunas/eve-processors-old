@@ -71,7 +71,7 @@ func initialize(m PubSubMessage) (*ProcessInit, error) {
 		return nil, fmt.Errorf("crypt.Decrypt: %v", err)
 	}
 
-	client := esi.NewEsiClient("https://esi.evetech.net/latest", accessToken, time.Second * 3)
+	client := esi.NewAuthenticatedEsiClient("https://esi.evetech.net/latest", accessToken, time.Second * 3)
 
 	return &ProcessInit{
 		dao:         dao,
@@ -183,6 +183,24 @@ func ProcessCharacterBlueprints(ctx context.Context, m PubSubMessage) error {
 
 	if err != nil {
 		return fmt.Errorf("processors.ProcessBlueprints: %v", err)
+	}
+
+	return nil
+}
+
+func ProcessMarketOrders() error {
+	dao, err := db.InitializeDb()
+
+	if err != nil {
+		return fmt.Errorf("db.InitializeDb: %v", err)
+	}
+
+	client := esi.NewEsiClient("https://esi.evetech.net/latest")
+
+	err = processors.ProcessMarketOrders(dao, client)
+
+	if err != nil {
+		return fmt.Errorf("processors.ProcessMarketOrders: %v", err)
 	}
 
 	return nil

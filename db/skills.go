@@ -28,24 +28,17 @@ func (d *DB) InsertSkills(characterID int64, skills []models.CharacterSkill) (in
 
 	defer rows.Close()
 
-	idSet := make(map[int]bool)
+	idSet, err := d.getIDSet(rows)
 
-	for rows.Next() {
-		var id int
-		err := rows.Scan(&id)
-
-		if err != nil {
-			return 0, 0, fmt.Errorf("rows.Scan: %v", err)
-		}
-
-		idSet[id] = true
+	if err != nil {
+		return 0, 0, fmt.Errorf("d.getIDSet: %v", err)
 	}
 
 	builder := squirrel.Insert("characterSkills").
 		Columns("skillId", "activeSkillLevel", "skillPointsInSkill", "trainedSkillLevel", "characterId")
 
 	for _, skill := range skills {
-		if idSet[skill.SkillID] {
+		if idSet[int64(skill.SkillID)] {
 			_, err := squirrel.Update("characterSkills").
 				Set("activeSkillLevel", skill.ActiveSkillLevel).
 				Set("skillPointsInSkill", skill.SP).
