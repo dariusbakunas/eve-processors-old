@@ -16,7 +16,9 @@ limitations under the License.
 package cmd
 
 import (
-	eve_processors "github.com/dariusbakunas/eve-processors"
+	"github.com/dariusbakunas/eve-processors/db"
+	"github.com/dariusbakunas/eve-processors/esi"
+	"github.com/dariusbakunas/eve-processors/processors"
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
 	"log"
@@ -33,10 +35,18 @@ var marketCmd = &cobra.Command{
 			log.Fatal("Error loading .env file")
 		}
 
-		err = eve_processors.ProcessMarketOrders()
+		dao, err := db.InitializeDb()
 
 		if err != nil {
-			log.Fatalf("eve_processors.ProcessMarketOrders: %v", err)
+			log.Fatalf("db.InitializeDb: %v", err)
+		}
+
+		client := esi.NewEsiClient("https://esi.evetech.net/latest")
+
+		err = processors.ProcessMarketOrders(dao, client)
+
+		if err != nil {
+			log.Fatalf("processors.ProcessMarketOrders: %v", err)
 		}
 	},
 }

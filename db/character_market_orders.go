@@ -142,7 +142,7 @@ func (d *DB) UpdateCharacterMarketOrders(characterID int64, orders []models.Char
 		if expires.Before(time.Now()) {
 			_, err = squirrel.Update("characterMarketOrders").
 				Set("state", "expired"). // no way to know if this is expired or cancelled, since it was not part of history
-				Where("id", order.ID).
+				Where(squirrel.Eq{"id": order.ID}).
 				RunWith(d.db).
 				Exec()
 

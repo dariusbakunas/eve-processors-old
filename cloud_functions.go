@@ -188,12 +188,14 @@ func ProcessCharacterBlueprints(ctx context.Context, m PubSubMessage) error {
 	return nil
 }
 
-func ProcessMarketOrders() error {
+func ProcessMarketOrders(ctx context.Context, m PubSubMessage) error {
 	dao, err := db.InitializeDb()
 
 	if err != nil {
 		return fmt.Errorf("db.InitializeDb: %v", err)
 	}
+
+	defer dao.Close()
 
 	client := esi.NewEsiClient("https://esi.evetech.net/latest")
 
