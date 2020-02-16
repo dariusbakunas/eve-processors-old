@@ -188,6 +188,24 @@ func ProcessCharacterBlueprints(ctx context.Context, m PubSubMessage) error {
 	return nil
 }
 
+func ProcessCharacterIndustryJobs(ctx context.Context, m PubSubMessage) error {
+	init, err := initialize(m)
+
+	if err != nil {
+		return fmt.Errorf("initialize: %v", err)
+	}
+
+	defer init.dao.Close()
+
+	err = processors.ProcessCharacterIndustryJobs(init.dao, init.esiClient, init.characterID)
+
+	if err != nil {
+		return fmt.Errorf("processors.ProcessCharacterIndustryJobs: %v", err)
+	}
+
+	return nil
+}
+
 func ProcessMarketOrders(ctx context.Context, m PubSubMessage) error {
 	dao, err := db.InitializeDb()
 

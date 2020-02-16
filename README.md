@@ -11,4 +11,5 @@ $ gcloud functions deploy --runtime=go111 --trigger-topic=esi-character-skills P
 $ gcloud functions deploy --runtime=go111 --trigger-topic=esi-character-skill-queue ProcessCharacterSkillQueue --env-vars-file .env.yaml
 $ gcloud functions deploy --runtime=go111 --trigger-topic=esi-character-market-orders ProcessCharacterMarketOrders --env-vars-file .env.yaml
 $ gcloud functions deploy --runtime=go111 --trigger-topic=esi-character-blueprints ProcessCharacterBlueprints --env-vars-file .env.yaml
+$ gcloud functions deploy --runtime=go111 --trigger-topic=esi-character-industry-jobs ProcessCharacterIndustryJobs --env-vars-file .env.yaml
 ```

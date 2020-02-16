@@ -21,6 +21,7 @@ func ProcessCharacter(dao *db.DB, character db.Character) error {
 		"esi-skills.read_skills.v1":            {"PUBSUB_SKILLS_ID", "PUBSUB_SKILL_QUEUE_ID"},
 		"esi-markets.read_character_orders.v1": {"PUBSUB_CHARACTER_MARKET_ORDERS_ID"},
 		"esi-characters.read_blueprints.v1":    {"PUBSUB_CHARACTER_BLUEPRINTS_ID"},
+		"esi-industry.read_character_jobs.v1":  {"PUBSUB_CHARACTER_INDUSTRY_JOBS_ID"},
 	}
 
 	fnMap := map[string][]FnRef {
@@ -28,6 +29,7 @@ func ProcessCharacter(dao *db.DB, character db.Character) error {
 		"esi-skills.read_skills.v1":            {FnRef{fn: ProcessSkills, name: "ProcessSkills"}, FnRef{fn: ProcessSkillQueue, name: "ProcessSkillQueue"}},
 		"esi-markets.read_character_orders.v1": {FnRef{fn: ProcessCharacterMarketOrders, name: "ProcessCharacterMarketOrders"}},
 		"esi-characters.read_blueprints.v1":    {FnRef{fn: ProcessBlueprints, name: "ProcessBlueprints"}},
+		"esi-industry.read_character_jobs.v1":  {FnRef{fn: ProcessCharacterIndustryJobs, name: "ProcessCharacterIndustryJobs"}},
 	}
 
 	eveClientId := os.Getenv("EVE_CLIENT_ID")

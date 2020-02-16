@@ -152,3 +152,19 @@ func (c *Client) GetBlueprints(characterID int64, page int) (*models.BlueprintsR
 		Pages:  pages,
 	}, nil
 }
+
+func (c *Client) GetIndustryJobs(characterID int64) ([]models.IndustryJob, error) {
+	url := fmt.Sprintf("%s/characters/%d/industry/jobs/?include_completed=true", c.BaseUrl, characterID)
+
+	bytes, _, err := c.get(url)
+	if err != nil {
+		return nil, fmt.Errorf("c.get: %v", err)
+	}
+
+	var data []models.IndustryJob
+	err = json.Unmarshal(bytes, &data)
+	if err != nil {
+		return nil, fmt.Errorf("json.Unmarshal: %v", err)
+	}
+	return data, nil
+}

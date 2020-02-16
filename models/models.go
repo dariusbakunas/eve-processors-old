@@ -129,11 +129,36 @@ type MarketOrder struct {
 	VolumeTotal  int             `json:"volume_total"`
 }
 
+type IndustryJob struct {
+	ActivityID           int                 `json:"activity_id"`
+	BlueprintID          int64               `json:"blueprint_id"`
+	BlueprintLocationID  int64               `json:"blueprint_location_id"`
+	BlueprintTypeID      int                 `json:"blueprint_type_id"`
+	CompletedCharacterID null.Int            `json:"completed_character_id"`
+	CompletedDate        null.Time           `json:"completed_date"`
+	Cost                 decimal.NullDecimal `json:"cost"`
+	Duration             int                 `json:"duration"`
+	EndDate              time.Time           `json:"end_date"`
+	FacilityID           int64               `json:"facility_id"`
+	InstalledID          int64               `json:"installer_id"`
+	JobID                int64               `json:"job_id"`
+	LicensedRuns         null.Int            `json:"licensed_runs"`
+	OutputLocationID     int64               `json:"output_location_id"`
+	PauseDate            null.Time           `json:"pause_date"`
+	Probability          decimal.NullDecimal `json:"probability"`
+	ProductTypeID        null.Int            `json:"product_type_id"`
+	Runs                 int                 `json:"runs"`
+	StartDate            time.Time           `json:"start_date"`
+	StationID            int64               `json:"station_id"`
+	Status               string              `json:"status"`
+	SuccessfulRuns       null.Int            `json:"successful_runs"`
+}
+
 type MarketOrderPriceItem struct {
-	TypeID int
-	BuyPrice decimal.Decimal
+	TypeID    int
+	BuyPrice  decimal.Decimal
 	SellPrice decimal.Decimal
-	SystemID int
+	SystemID  int
 }
 
 type MarketOrderResponse struct {

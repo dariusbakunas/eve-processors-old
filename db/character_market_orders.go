@@ -50,6 +50,10 @@ func (d *DB) UpdateCharacterMarketOrders(characterID int64, orders []models.Char
 
 	activeOrders, err := d.getActiveOrders(characterID)
 
+	if err != nil {
+		return 0, 0, fmt.Errorf("d.getActiveOrders: %v", err)
+	}
+
 	builder := squirrel.Insert("characterMarketOrders").
 		Options("IGNORE").
 		Columns(
