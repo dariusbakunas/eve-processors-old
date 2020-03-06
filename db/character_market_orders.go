@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/Masterminds/squirrel"
 	"github.com/dariusbakunas/eve-processors/models"
+	"github.com/google/martian/log"
 	"gopkg.in/guregu/null.v3"
 	"time"
 )
@@ -66,7 +67,7 @@ func (d *DB) UpdateCharacterMarketOrders(characterID int64, orders []models.Char
 			"locationId",
 			"minVolume",
 			"price",
-			"range",
+			"`range`",
 			"regionId",
 			"typeId",
 			"state",
@@ -101,7 +102,7 @@ func (d *DB) UpdateCharacterMarketOrders(characterID int64, orders []models.Char
 			updated++
 
 			delete(activeOrders, o.OrderID)
-		} else if o.Duration == 0 {
+		} else if o.Duration != 0 {
 			builder = builder.Values(
 				o.OrderID,
 				o.Duration,
@@ -126,6 +127,14 @@ func (d *DB) UpdateCharacterMarketOrders(characterID int64, orders []models.Char
 	}
 
 	if inserted > 0 {
+		sql, args, err := builder.ToSql()
+
+		if err != nil {
+			return 0, 0, fmt.Errorf("builder.Exec: %v", err)
+		}
+
+		log.Debugf("market order insert query: %v, %v", sql, args)
+
 		result, err := builder.RunWith(d.db).Exec()
 
 		if err != nil {
