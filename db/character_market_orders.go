@@ -88,6 +88,8 @@ func (d *DB) UpdateCharacterMarketOrders(characterID int64, orders []models.Char
 
 		if _, ok := activeOrders[o.OrderID]; ok {
 			_, err = squirrel.Update("characterMarketOrders").
+				Set("issued", o.Issued).
+				Set("duration", o.Duration).
 				Set("price", o.Price).
 				Set("state", state).
 				Set("volumeRemain", o.VolumeRemain).
